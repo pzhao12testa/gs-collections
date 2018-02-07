@@ -415,16 +415,17 @@ public class Object<name>HashMap\<K> implements MutableObject<name>Map\<K>, Exte
     public void removeKey(K key)
     {
         int index = this.probe(key);
+        this.removeKeyAtIndex(key, index);
+    }
+
+    private void removeKeyAtIndex(K key, int index)
+    {
         if (isNonSentinel(this.keys[index]) && nullSafeEquals(this.toNonSentinel(this.keys[index]), key))
         {
             this.keys[index] = REMOVED_KEY;
             this.values[index] = EMPTY_VALUE;
             this.occupiedWithData--;
             this.occupiedWithSentinels++;
-            if (this.occupiedWithSentinels > this.maxOccupiedWithSentinels())
-            {
-                this.rehash();
-            }
         }
     }
 
@@ -443,10 +444,6 @@ public class Object<name>HashMap\<K> implements MutableObject<name>Map\<K>, Exte
             this.values[index] = EMPTY_VALUE;
             this.occupiedWithData--;
             this.occupiedWithSentinels++;
-            if (this.occupiedWithSentinels > this.maxOccupiedWithSentinels())
-            {
-                this.rehash();
-            }
 
             return oldValue;
         }
@@ -522,7 +519,7 @@ public class Object<name>HashMap\<K> implements MutableObject<name>Map\<K>, Exte
         this.keys[index] = toSentinelIfNull(key);
         this.values[index] = value;
         ++this.occupiedWithData;
-        if (this.occupiedWithData > this.maxOccupiedWithData())
+        if (this.occupiedWithData + this.occupiedWithSentinels > this.maxOccupiedWithData())
         {
             this.rehashAndGrow();
         }
@@ -644,6 +641,14 @@ public class Object<name>HashMap\<K> implements MutableObject<name>Map\<K>, Exte
     }
 
     public void forEach(<name>Procedure procedure)
+    {
+        this.each(procedure);
+    }
+
+    /**
+     * @since 7.0.
+     */
+    public void each(<name>Procedure procedure)
     {
         this.forEachValue(procedure);
     }
@@ -827,20 +832,39 @@ public class Object<name>HashMap\<K> implements MutableObject<name>Map\<K>, Exte
         return result;
     }
 
-    public <wideType.(type)> sum()
+    <if(primitive.floatingPoint)>public <wideType.(type)> sum()
+{
+    <wideType.(type)> result = <wideZero.(type)>;
+    <wideType.(type)> compensation = <wideZero.(type)>;
+
+    for (int i = 0; i \< this.keys.length; i++)
     {
-        <wideType.(type)> sum = <wideZero.(type)>;
-
-        for (int i = 0; i \< this.keys.length; i++)
+        if (isNonSentinel(this.keys[i]))
         {
-            if (isNonSentinel(this.keys[i]))
-            {
-                sum += this.values[i];
-            }
+            <wideType.(type)> adjustedValue = this.values[i] - compensation;
+            <wideType.(type)> nextSum = result + adjustedValue;
+            compensation = nextSum - result - adjustedValue;
+            result = nextSum;
         }
-        return sum;
     }
+    return result;
+}
 
+    <else>public <wideType.(type)> sum()
+{
+    <wideType.(type)> result = <wideZero.(type)>;
+
+    for (int i = 0; i \< this.keys.length; i++)
+    {
+        if (isNonSentinel(this.keys[i]))
+        {
+            result += this.values[i];
+        }
+    }
+    return result;
+}
+
+    <endif>
     public <type> max()
     {
         if (this.isEmpty())
@@ -1047,11 +1071,6 @@ public class Object<name>HashMap\<K> implements MutableObject<name>Map\<K>, Exte
     public void compact()
     {
         this.rehash(this.smallestPowerOfTwoGreaterThan(this.size()));
-    }
-
-    private void rehash()
-    {
-        this.rehash(this.keys.length);
     }
 
     private void rehashAndGrow()
@@ -1346,7 +1365,7 @@ public class Object<name>HashMap\<K> implements MutableObject<name>Map\<K>, Exte
                 K next = iterator.next();
                 if (!collection.contains(next))
                 {
-                    this.remove(next);
+                    iterator.remove();
                 }
             }
             return oldSize != Object<name>HashMap.this.size();
@@ -1429,14 +1448,7 @@ public class Object<name>HashMap\<K> implements MutableObject<name>Map\<K>, Exte
             if (isNonSentinel(this.currentKey))
             {
                 int index = this.position - 1;
-                Object<name>HashMap.this.keys[index] = REMOVED_KEY;
-                Object<name>HashMap.this.values[index] = EMPTY_VALUE;
-                Object<name>HashMap.this.occupiedWithData--;
-                Object<name>HashMap.this.occupiedWithSentinels++;
-                if (Object<name>HashMap.this.occupiedWithSentinels > Object<name>HashMap.this.maxOccupiedWithSentinels())
-                {
-                    Object<name>HashMap.this.rehash();
-                }
+                Object<name>HashMap.this.removeKeyAtIndex(toNonSentinel(this.currentKey), index);
             }
             else
             {
@@ -1663,6 +1675,11 @@ public class Object<name>HashMap\<K> implements MutableObject<name>Map\<K>, Exte
         }
 
         public void forEach(<name>Procedure procedure)
+        {
+            this.each(procedure);
+        }
+
+        public void each(<name>Procedure procedure)
         {
             Object<name>HashMap.this.forEach(procedure);
         }

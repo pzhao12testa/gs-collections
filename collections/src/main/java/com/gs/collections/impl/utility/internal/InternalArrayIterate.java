@@ -25,6 +25,7 @@ import java.util.NoSuchElementException;
 import java.util.RandomAccess;
 
 import com.gs.collections.api.RichIterable;
+import com.gs.collections.api.block.HashingStrategy;
 import com.gs.collections.api.block.function.Function;
 import com.gs.collections.api.block.function.Function2;
 import com.gs.collections.api.block.function.primitive.DoubleFunction;
@@ -57,6 +58,7 @@ import com.gs.collections.impl.map.mutable.primitive.ObjectDoubleHashMap;
 import com.gs.collections.impl.map.mutable.primitive.ObjectLongHashMap;
 import com.gs.collections.impl.partition.list.PartitionFastList;
 import com.gs.collections.impl.set.mutable.UnifiedSet;
+import com.gs.collections.impl.set.strategy.mutable.UnifiedSetWithHashingStrategy;
 import com.gs.collections.impl.tuple.Tuples;
 import com.gs.collections.impl.utility.ArrayIterate;
 import com.gs.collections.impl.utility.Iterate;
@@ -834,7 +836,11 @@ public final class InternalArrayIterate
         }
     }
 
-    public static <T, R extends Collection<T>> R distinct(T[] objectArray, int size, R targetCollection)
+    /**
+     * @deprecated in 7.0.
+     */
+    @Deprecated
+    public static <T, R extends List<T>> R distinct(T[] objectArray, int size, R targetList)
     {
         MutableSet<T> seenSoFar = UnifiedSet.newSet();
 
@@ -843,10 +849,37 @@ public final class InternalArrayIterate
             T each = objectArray[i];
             if (seenSoFar.add(each))
             {
-                targetCollection.add(each);
+                targetList.add(each);
             }
         }
-        return targetCollection;
+        return targetList;
+    }
+
+    /**
+     * @since 7.0.
+     */
+    public static <T> FastList<T> distinct(T[] objectArray, int size)
+    {
+        return InternalArrayIterate.distinct(objectArray, size, FastList.<T>newList());
+    }
+
+    /**
+     * @since 7.0.
+     */
+    public static <T> FastList<T> distinct(T[] objectArray, int size, HashingStrategy<? super T> hashingStrategy)
+    {
+        MutableSet<T> seenSoFar = UnifiedSetWithHashingStrategy.newSet(hashingStrategy);
+
+        FastList<T> result = FastList.newList();
+        for (int i = 0; i < size; i++)
+        {
+            T each = objectArray[i];
+            if (seenSoFar.add(each))
+            {
+                result.add(each);
+            }
+        }
+        return result;
     }
 
     public static <T> long sumOfInt(T[] array, int size, IntFunction<? super T> function)
@@ -922,10 +955,16 @@ public final class InternalArrayIterate
     public static <V, T> ObjectDoubleMap<V> sumByFloat(T[] array, int size, Function<T, V> groupBy, FloatFunction<? super T> function)
     {
         ObjectDoubleHashMap<V> result = ObjectDoubleHashMap.newMap();
+        ObjectDoubleHashMap<V> groupKeyToCompensation = ObjectDoubleHashMap.newMap();
         for (int i = 0; i < size; i++)
         {
             T item = array[i];
-            result.addToValue(groupBy.valueOf(item), function.floatValueOf(item));
+            V groupByKey = groupBy.valueOf(item);
+            double compensation = groupKeyToCompensation.getIfAbsentPut(groupByKey, 0.0d);
+            double adjustedValue = function.floatValueOf(item) - compensation;
+            double nextSum = result.get(groupByKey) + adjustedValue;
+            groupKeyToCompensation.put(groupByKey, nextSum - result.get(groupByKey) - adjustedValue);
+            result.put(groupByKey, nextSum);
         }
         return result;
     }
@@ -933,10 +972,16 @@ public final class InternalArrayIterate
     public static <V, T> ObjectDoubleMap<V> sumByDouble(T[] array, int size, Function<T, V> groupBy, DoubleFunction<? super T> function)
     {
         ObjectDoubleHashMap<V> result = ObjectDoubleHashMap.newMap();
+        ObjectDoubleHashMap<V> groupKeyToCompensation = ObjectDoubleHashMap.newMap();
         for (int i = 0; i < size; i++)
         {
             T item = array[i];
-            result.addToValue(groupBy.valueOf(item), function.doubleValueOf(item));
+            V groupByKey = groupBy.valueOf(item);
+            double compensation = groupKeyToCompensation.getIfAbsentPut(groupByKey, 0.0d);
+            double adjustedValue = function.doubleValueOf(item) - compensation;
+            double nextSum = result.get(groupByKey) + adjustedValue;
+            groupKeyToCompensation.put(groupByKey, nextSum - result.get(groupByKey) - adjustedValue);
+            result.put(groupByKey, nextSum);
         }
         return result;
     }

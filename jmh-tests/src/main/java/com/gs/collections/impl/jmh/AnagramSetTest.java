@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Goldman Sachs.
+ * Copyright 2015 Goldman Sachs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import com.gs.collections.api.tuple.Pair;
 import com.gs.collections.impl.block.factory.Comparators;
 import com.gs.collections.impl.block.factory.Procedures;
 import com.gs.collections.impl.forkjoin.FJIterate;
+import com.gs.collections.impl.jmh.runner.AbstractJMHTestRunner;
 import com.gs.collections.impl.list.mutable.CompositeFastList;
 import com.gs.collections.impl.list.mutable.FastList;
 import com.gs.collections.impl.parallel.ParallelIterate;
@@ -44,19 +45,17 @@ import org.apache.commons.lang.RandomStringUtils;
 import org.junit.Assert;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
-import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.OutputTimeUnit;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
-import org.openjdk.jmh.annotations.Warmup;
 
 @State(Scope.Thread)
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.SECONDS)
-public class AnagramSetTest
+public class AnagramSetTest extends AbstractJMHTestRunner
 {
     private static final int SIZE = 1_000_000;
     private static final int BATCH_SIZE = 10_000;
@@ -80,8 +79,6 @@ public class AnagramSetTest
         this.executorService.awaitTermination(1L, TimeUnit.SECONDS);
     }
 
-    @Warmup(iterations = 20)
-    @Measurement(iterations = 10)
     @Benchmark
     public void serial_eager_scala()
     {
@@ -100,8 +97,6 @@ public class AnagramSetTest
         AnagramSetScalaTest.parallel_lazy_scala();
     }
 
-    @Warmup(iterations = 20)
-    @Measurement(iterations = 10)
     @Benchmark
     public void serial_eager_gsc()
     {
@@ -164,9 +159,36 @@ public class AnagramSetTest
     }
 
     @Benchmark
+    public void serial_lazy_streams_gsc()
+    {
+        Map<Alphagram, Set<String>> groupBy = this.gscWords.stream().collect(Collectors.groupingBy(Alphagram::new, Collectors.<String>toSet()));
+        groupBy.entrySet()
+                .stream()
+                .map(Map.Entry::getValue)
+                .filter(list -> list.size() >= SIZE_THRESHOLD)
+                .sorted(Comparator.<Set<String>>comparingInt(Set::size).reversed())
+                .map(list -> list.size() + ": " + list)
+                .forEach(e -> Assert.assertFalse(e.isEmpty()));
+    }
+
+    @Benchmark
     public void parallel_lazy_jdk()
     {
         Map<Alphagram, Set<String>> groupBy = this.jdkWords.parallelStream().collect(Collectors.groupingBy(Alphagram::new, Collectors.<String>toSet()));
+        groupBy.entrySet()
+                .parallelStream()
+                .map(Map.Entry::getValue)
+                .filter(list -> list.size() >= SIZE_THRESHOLD)
+                .sorted(Comparator.<Set<String>>comparingInt(Set::size).reversed())
+                .parallel()
+                .map(list -> list.size() + ": " + list)
+                .forEach(e -> Assert.assertFalse(e.isEmpty()));
+    }
+
+    @Benchmark
+    public void parallel_lazy_streams_gsc()
+    {
+        Map<Alphagram, Set<String>> groupBy = this.gscWords.parallelStream().collect(Collectors.groupingBy(Alphagram::new, Collectors.<String>toSet()));
         groupBy.entrySet()
                 .parallelStream()
                 .map(Map.Entry::getValue)

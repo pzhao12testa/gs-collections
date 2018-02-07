@@ -28,6 +28,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.RandomAccess;
 
+import com.gs.collections.api.block.HashingStrategy;
 import com.gs.collections.api.block.function.Function;
 import com.gs.collections.api.block.function.Function0;
 import com.gs.collections.api.block.function.Function2;
@@ -253,14 +254,14 @@ public class FastList<T>
     @Override
     public FastList<T> sortThis(Comparator<? super T> comparator)
     {
-        ArrayIterate.sort(this.items, this.size, comparator);
+        Arrays.sort(this.items, 0, this.size, comparator);
         return this;
     }
 
     @Override
     public FastList<T> sortThis()
     {
-        ArrayIterate.sort(this.items, this.size, null);
+        Arrays.sort(this.items, 0, this.size);
         return this;
     }
 
@@ -287,6 +288,10 @@ public class FastList<T>
         {
             this.addAllArrayList((ArrayList<T>) source);
         }
+        else if (source instanceof List && source instanceof RandomAccess)
+        {
+            this.addAllRandomAccessList((List<T>) source);
+        }
         else
         {
             this.addAllCollection(source);
@@ -310,6 +315,15 @@ public class FastList<T>
         int newSize = this.size + sourceSize;
         this.ensureCapacity(newSize);
         ArrayListIterate.toArray(source, this.items, this.size, sourceSize);
+        this.size = newSize;
+    }
+
+    private void addAllRandomAccessList(List<T> source)
+    {
+        int sourceSize = source.size();
+        int newSize = this.size + sourceSize;
+        this.ensureCapacity(newSize);
+        RandomAccessListIterate.toArray(source, this.items, this.size, sourceSize);
         this.size = newSize;
     }
 
@@ -640,7 +654,7 @@ public class FastList<T>
     }
 
     @Override
-    public void removeIf(Predicate<? super T> predicate)
+    public boolean removeIf(Predicate<? super T> predicate)
     {
         int currentFilledIndex = 0;
         for (int i = 0; i < this.size; i++)
@@ -656,7 +670,9 @@ public class FastList<T>
                 currentFilledIndex++;
             }
         }
+        boolean changed = currentFilledIndex < this.size;
         this.wipeAndResetTheEnd(currentFilledIndex);
+        return changed;
     }
 
     private void wipeAndResetTheEnd(int newCurrentFilledIndex)
@@ -669,7 +685,7 @@ public class FastList<T>
     }
 
     @Override
-    public <P> void removeIfWith(Predicate2<? super T, ? super P> predicate, P parameter)
+    public <P> boolean removeIfWith(Predicate2<? super T, ? super P> predicate, P parameter)
     {
         int currentFilledIndex = 0;
         for (int i = 0; i < this.size; i++)
@@ -685,7 +701,9 @@ public class FastList<T>
                 currentFilledIndex++;
             }
         }
+        boolean changed = currentFilledIndex < this.size;
         this.wipeAndResetTheEnd(currentFilledIndex);
+        return changed;
     }
 
     @Override
@@ -1073,6 +1091,10 @@ public class FastList<T>
         {
             this.addAllArrayListAtIndex((ArrayList<T>) source, index);
         }
+        else if (source instanceof List && source instanceof RandomAccess)
+        {
+            this.addAllRandomAccessListAtIndex((List<T>) source, index);
+        }
         else
         {
             this.addAllCollectionAtIndex(source, index);
@@ -1097,6 +1119,16 @@ public class FastList<T>
         this.ensureCapacity(newSize);
         this.shiftElementsAtIndex(index, sourceSize);
         ArrayListIterate.toArray(source, this.items, index, sourceSize);
+        this.size = newSize;
+    }
+
+    private void addAllRandomAccessListAtIndex(List<T> source, int index)
+    {
+        int sourceSize = source.size();
+        int newSize = this.size + sourceSize;
+        this.ensureCapacity(newSize);
+        this.shiftElementsAtIndex(index, sourceSize);
+        RandomAccessListIterate.toArray(source, this.items, index, sourceSize);
         this.size = newSize;
     }
 
@@ -1235,9 +1267,15 @@ public class FastList<T>
     }
 
     @Override
-    public FastList<T> distinct()
+    public MutableList<T> distinct()
     {
-        return InternalArrayIterate.distinct(this.items, this.size, FastList.<T>newList());
+        return InternalArrayIterate.distinct(this.items, this.size);
+    }
+
+    @Override
+    public MutableList<T> distinct(HashingStrategy<? super T> hashingStrategy)
+    {
+        return InternalArrayIterate.distinct(this.items, this.size, hashingStrategy);
     }
 
     @Override

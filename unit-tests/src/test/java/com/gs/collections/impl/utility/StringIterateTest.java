@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Goldman Sachs.
+ * Copyright 2015 Goldman Sachs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,14 @@ import com.gs.collections.api.bag.MutableBag;
 import com.gs.collections.api.block.function.Function;
 import com.gs.collections.api.block.procedure.primitive.CharProcedure;
 import com.gs.collections.api.list.MutableList;
+import com.gs.collections.api.list.primitive.CharList;
+import com.gs.collections.api.list.primitive.ImmutableCharList;
+import com.gs.collections.api.list.primitive.IntList;
 import com.gs.collections.api.map.MutableMap;
 import com.gs.collections.api.set.MutableSet;
+import com.gs.collections.api.set.primitive.ImmutableCharSet;
+import com.gs.collections.api.set.primitive.ImmutableIntSet;
+import com.gs.collections.api.tuple.Twin;
 import com.gs.collections.impl.block.factory.Functions;
 import com.gs.collections.impl.block.factory.Procedures;
 import com.gs.collections.impl.block.factory.primitive.CharPredicates;
@@ -31,8 +37,14 @@ import com.gs.collections.impl.block.function.primitive.CodePointFunction;
 import com.gs.collections.impl.block.predicate.CodePointPredicate;
 import com.gs.collections.impl.block.procedure.primitive.CodePointProcedure;
 import com.gs.collections.impl.factory.Lists;
+import com.gs.collections.impl.factory.primitive.CharSets;
+import com.gs.collections.impl.factory.primitive.IntSets;
 import com.gs.collections.impl.list.mutable.FastList;
+import com.gs.collections.impl.list.mutable.primitive.CharArrayList;
 import com.gs.collections.impl.set.mutable.UnifiedSet;
+import com.gs.collections.impl.string.immutable.CharAdapter;
+import com.gs.collections.impl.string.immutable.CodePointAdapter;
+import com.gs.collections.impl.string.immutable.CodePointList;
 import com.gs.collections.impl.test.Verify;
 import com.gs.collections.impl.tuple.Tuples;
 import org.junit.Assert;
@@ -43,6 +55,255 @@ import org.junit.Test;
  */
 public class StringIterateTest
 {
+    public static final String THE_QUICK_BROWN_FOX_JUMPS_OVER_THE_LAZY_DOG = "The quick brown fox jumps over the lazy dog.";
+    public static final String ALPHABET_LOWERCASE = "abcdefghijklmnopqrstuvwxyz";
+    public static final Twin<String> HALF_ABET = StringIterate.splitAtIndex(ALPHABET_LOWERCASE, 13);
+    public static final String TQBFJOTLD_MINUS_HALF_ABET_1 = "t qu rown ox ups ovr t zy o.";
+    public static final String TQBFJOTLD_MINUS_HALF_ABET_2 = "he ick b f jm e he la dg.";
+
+    @Test
+    public void asCharAdapter()
+    {
+        CharAdapter answer =
+                StringIterate.asCharAdapter("HelloHellow")
+                        .collectChar(Character::toUpperCase)
+                        .select(c -> c != 'W')
+                        .distinct()
+                        .toReversed()
+                        .reject(CharAdapter.adapt("LE")::contains)
+                        .newWith('!');
+
+        Assert.assertEquals("OH!", answer.toString());
+        Assert.assertEquals("OH!", answer.toStringBuilder().toString());
+        Assert.assertEquals("OH!", answer.makeString(""));
+
+        CharList charList = StringIterate.asCharAdapter("HelloHellow")
+                .asLazy()
+                .collectChar(Character::toUpperCase)
+                .select(c -> c != 'W')
+                .toList()
+                .distinct()
+                .toReversed()
+                .reject(CharAdapter.adapt("LE")::contains)
+                .with('!');
+
+        Assert.assertEquals("OH!", CharAdapter.from(charList).toString());
+        Assert.assertEquals("OH!", CharAdapter.from(CharAdapter.from(charList)).toString());
+
+        String helloUppercase2 = StringIterate.asCharAdapter("Hello")
+                .asLazy()
+                .collectChar(Character::toUpperCase)
+                .makeString("");
+        Assert.assertEquals("HELLO", helloUppercase2);
+
+        CharArrayList arraylist = new CharArrayList();
+        StringIterate.asCharAdapter("Hello".toUpperCase())
+                .chars()
+                .sorted()
+                .forEach(e -> arraylist.add((char) e));
+        Assert.assertEquals(StringIterate.asCharAdapter("EHLLO"), arraylist);
+
+        ImmutableCharList arrayList2 =
+                StringIterate.asCharAdapter("Hello".toUpperCase())
+                        .toSortedList()
+                        .toImmutable();
+
+        Assert.assertEquals(StringIterate.asCharAdapter("EHLLO"), arrayList2);
+
+        Assert.assertEquals(StringIterate.asCharAdapter("HELLO"), CharAdapter.adapt("hello").collectChar(Character::toUpperCase));
+    }
+
+    @Test
+    public void asCharAdapterExtra()
+    {
+        Assert.assertEquals(9,
+                StringIterate.asCharAdapter(THE_QUICK_BROWN_FOX_JUMPS_OVER_THE_LAZY_DOG)
+                        .count(c -> !Character.isLetter(c)));
+
+        Assert.assertTrue(
+                StringIterate.asCharAdapter(THE_QUICK_BROWN_FOX_JUMPS_OVER_THE_LAZY_DOG).anySatisfy(Character::isWhitespace));
+
+        Assert.assertEquals(8,
+                StringIterate.asCharAdapter(THE_QUICK_BROWN_FOX_JUMPS_OVER_THE_LAZY_DOG)
+                        .count(Character::isWhitespace));
+
+        Verify.assertSize(26,
+                StringIterate.asCharAdapter(THE_QUICK_BROWN_FOX_JUMPS_OVER_THE_LAZY_DOG)
+                        .asLazy()
+                        .select(Character::isLetter)
+                        .collectChar(Character::toLowerCase).toSet());
+
+        ImmutableCharSet alphaCharAdapter =
+                StringIterate.asCharAdapter(ALPHABET_LOWERCASE).toSet().toImmutable();
+        Assert.assertTrue(
+                StringIterate.asCharAdapter(THE_QUICK_BROWN_FOX_JUMPS_OVER_THE_LAZY_DOG).containsAll(alphaCharAdapter));
+        Assert.assertEquals(
+                CharSets.immutable.empty(),
+                alphaCharAdapter.newWithoutAll(StringIterate.asCharAdapter(THE_QUICK_BROWN_FOX_JUMPS_OVER_THE_LAZY_DOG.toLowerCase())));
+        Assert.assertEquals(
+                TQBFJOTLD_MINUS_HALF_ABET_1,
+                StringIterate.asCharAdapter(THE_QUICK_BROWN_FOX_JUMPS_OVER_THE_LAZY_DOG.toLowerCase())
+                        .newWithoutAll(StringIterate.asCharAdapter(HALF_ABET.getOne()))
+                        .toString());
+        Assert.assertEquals(
+                TQBFJOTLD_MINUS_HALF_ABET_2,
+                StringIterate.asCharAdapter(THE_QUICK_BROWN_FOX_JUMPS_OVER_THE_LAZY_DOG.toLowerCase())
+                        .newWithoutAll(StringIterate.asCharAdapter(HALF_ABET.getTwo()))
+                        .toString());
+    }
+
+    @Test
+    public void buildTheAlphabetFromEmpty()
+    {
+        String alphabet = StringIterate.asCharAdapter("")
+                .newWith('a')
+                .newWithAll(StringIterate.asCharAdapter(HALF_ABET.getOne()))
+                .newWithAll(StringIterate.asCharAdapter(HALF_ABET.getTwo()))
+                .newWithout('a').toString();
+        Assert.assertEquals(ALPHABET_LOWERCASE, alphabet);
+    }
+
+    @Test
+    public void asCodePointAdapter()
+    {
+        CodePointAdapter answer =
+                StringIterate.asCodePointAdapter("HelloHellow")
+                        .collectInt(Character::toUpperCase)
+                        .select(i -> i != 'W')
+                        .distinct()
+                        .toReversed()
+                        .reject(CodePointAdapter.adapt("LE")::contains)
+                        .newWith('!');
+
+        Assert.assertEquals("OH!", answer.toString());
+        Assert.assertEquals("OH!", answer.toStringBuilder().toString());
+        Assert.assertEquals("OH!", answer.makeString(""));
+
+        IntList intList = StringIterate.asCodePointAdapter("HelloHellow")
+                .asLazy()
+                .collectInt(Character::toUpperCase)
+                .select(i -> i != 'W')
+                .toList()
+                .distinct()
+                .toReversed()
+                .reject(CodePointAdapter.adapt("LE")::contains)
+                .with('!');
+
+        Assert.assertEquals("OH!", CodePointAdapter.from(intList).toString());
+        Assert.assertEquals("OH!", CodePointAdapter.from(CodePointAdapter.from(intList)).toString());
+    }
+
+    @Test
+    public void asCodePointAdapterExtra()
+    {
+        Assert.assertEquals(9,
+                StringIterate.asCodePointAdapter(THE_QUICK_BROWN_FOX_JUMPS_OVER_THE_LAZY_DOG)
+                        .count(i -> !Character.isLetter(i)));
+
+        Assert.assertTrue(
+                StringIterate.asCodePointAdapter(THE_QUICK_BROWN_FOX_JUMPS_OVER_THE_LAZY_DOG).anySatisfy(Character::isWhitespace));
+
+        Assert.assertEquals(8,
+                StringIterate.asCodePointAdapter(THE_QUICK_BROWN_FOX_JUMPS_OVER_THE_LAZY_DOG)
+                        .count(Character::isWhitespace));
+
+        Verify.assertSize(26,
+                StringIterate.asCodePointAdapter(THE_QUICK_BROWN_FOX_JUMPS_OVER_THE_LAZY_DOG)
+                        .asLazy()
+                        .select(Character::isLetter)
+                        .collectInt(Character::toLowerCase).toSet());
+
+        ImmutableIntSet alphaints =
+                StringIterate.asCodePointAdapter(ALPHABET_LOWERCASE).toSet().toImmutable();
+        Assert.assertTrue(
+                StringIterate.asCodePointAdapter(THE_QUICK_BROWN_FOX_JUMPS_OVER_THE_LAZY_DOG).containsAll(alphaints));
+        Assert.assertEquals(
+                IntSets.immutable.empty(),
+                alphaints.newWithoutAll(StringIterate.asCodePointAdapter(THE_QUICK_BROWN_FOX_JUMPS_OVER_THE_LAZY_DOG.toLowerCase())));
+        Assert.assertEquals(
+                TQBFJOTLD_MINUS_HALF_ABET_1,
+                StringIterate.asCodePointAdapter(THE_QUICK_BROWN_FOX_JUMPS_OVER_THE_LAZY_DOG.toLowerCase())
+                        .newWithoutAll(StringIterate.asCodePointAdapter(HALF_ABET.getOne()))
+                        .toString());
+        Assert.assertEquals(
+                TQBFJOTLD_MINUS_HALF_ABET_2,
+                StringIterate.asCodePointAdapter(THE_QUICK_BROWN_FOX_JUMPS_OVER_THE_LAZY_DOG.toLowerCase())
+                        .newWithoutAll(StringIterate.asCodePointAdapter(HALF_ABET.getTwo()))
+                        .toString());
+    }
+
+    @Test
+    public void toCodePointList()
+    {
+        CodePointList answer =
+                StringIterate.toCodePointList("Hello")
+                        .collectInt(Character::toUpperCase)
+                        .select(i -> i != 'W')
+                        .distinct()
+                        .toReversed()
+                        .reject(CodePointList.from("LE")::contains)
+                        .newWith('!');
+
+        Assert.assertEquals("OH!", answer.toString());
+        Assert.assertEquals("OH!", answer.toStringBuilder().toString());
+        Assert.assertEquals("OH!", answer.makeString(""));
+
+        IntList intList = StringIterate.toCodePointList("HelloHellow")
+                .asLazy()
+                .collectInt(Character::toUpperCase)
+                .select(i -> i != 'W')
+                .toList()
+                .distinct()
+                .toReversed()
+                .reject(CodePointList.from("LE")::contains)
+                .with('!');
+
+        Assert.assertEquals("OH!", CodePointList.from(intList).toString());
+        Assert.assertEquals("OH!", CodePointList.from(CodePointList.from(intList)).toString());
+    }
+
+    @Test
+    public void toCodePointListExtra()
+    {
+        Assert.assertEquals(9,
+                StringIterate.toCodePointList(THE_QUICK_BROWN_FOX_JUMPS_OVER_THE_LAZY_DOG)
+                        .count(i -> !Character.isLetter(i)));
+
+        Assert.assertTrue(
+                StringIterate.toCodePointList(THE_QUICK_BROWN_FOX_JUMPS_OVER_THE_LAZY_DOG).anySatisfy(Character::isWhitespace));
+
+        Assert.assertEquals(8,
+                StringIterate.toCodePointList(THE_QUICK_BROWN_FOX_JUMPS_OVER_THE_LAZY_DOG)
+                        .count(Character::isWhitespace));
+
+        Verify.assertSize(26,
+                StringIterate.toCodePointList(THE_QUICK_BROWN_FOX_JUMPS_OVER_THE_LAZY_DOG)
+                        .asLazy()
+                        .select(Character::isLetter)
+                        .collectInt(Character::toLowerCase).toSet());
+
+        ImmutableIntSet alphaints =
+                StringIterate.toCodePointList(ALPHABET_LOWERCASE).toSet().toImmutable();
+        Assert.assertTrue(
+                StringIterate.toCodePointList(THE_QUICK_BROWN_FOX_JUMPS_OVER_THE_LAZY_DOG).containsAll(alphaints));
+        Assert.assertEquals(
+                IntSets.immutable.empty(),
+                alphaints.newWithoutAll(StringIterate.toCodePointList(THE_QUICK_BROWN_FOX_JUMPS_OVER_THE_LAZY_DOG.toLowerCase())));
+        Assert.assertTrue(
+                StringIterate.toCodePointList(THE_QUICK_BROWN_FOX_JUMPS_OVER_THE_LAZY_DOG)
+                        .containsAll(StringIterate.toCodePointList(HALF_ABET.getOne())));
+        Assert.assertEquals(
+                TQBFJOTLD_MINUS_HALF_ABET_1,
+                StringIterate.toCodePointList(THE_QUICK_BROWN_FOX_JUMPS_OVER_THE_LAZY_DOG.toLowerCase())
+                        .newWithoutAll(StringIterate.toCodePointList(HALF_ABET.getOne()))
+                        .toString());
+        Assert.assertEquals(
+                TQBFJOTLD_MINUS_HALF_ABET_2,
+                StringIterate.toCodePointList(THE_QUICK_BROWN_FOX_JUMPS_OVER_THE_LAZY_DOG.toLowerCase())
+                        .newWithoutAll(StringIterate.toCodePointList(HALF_ABET.getTwo()))
+                        .toString());
+    }
+
     @Test
     public void englishToUpperLowerCase()
     {
@@ -62,6 +323,13 @@ public class StringIterateTest
     {
         Assert.assertEquals("ABC", StringIterate.collect("abc", CodePointFunction.TO_UPPERCASE));
         Assert.assertEquals("abc", StringIterate.collect("abc", CodePointFunction.TO_LOWERCASE));
+    }
+
+    @Test
+    public void collectCodePointUnicode()
+    {
+        Assert.assertEquals("\u3042\uD840\uDC00\u3044\uD840\uDC03\u3046\uD83D\uDE09", StringIterate.collect("\u3042\uD840\uDC00\u3044\uD840\uDC03\u3046\uD83D\uDE09", CodePointFunction.PASS_THRU));
+        Assert.assertEquals("\u3042\uD840\uDC00\u3044\uD840\uDC03\u3046\uD83D\uDE09", StringIterate.collect("\u3042\uD840\uDC00\u3044\uD840\uDC03\u3046\uD83D\uDE09", CodePointFunction.PASS_THRU));
     }
 
     @Test
@@ -109,6 +377,13 @@ public class StringIterateTest
     }
 
     @Test
+    public void selectCodePointUnicode()
+    {
+        String string = StringIterate.select("\u3042\uD840\uDC00\u3044\uD840\uDC03\u3046\uD83D\uDE09", CodePointPredicate.IS_BMP);
+        Assert.assertEquals("\u3042\u3044\u3046", string);
+    }
+
+    @Test
     public void detect()
     {
         char character = StringIterate.detect("1a2a3", CharPredicates.isLetter());
@@ -144,6 +419,13 @@ public class StringIterateTest
     }
 
     @Test
+    public void allSatisfyCodePointUnicode()
+    {
+        Assert.assertTrue(StringIterate.allSatisfy("\u3042\u3044\u3046", CodePointPredicate.IS_BMP));
+        Assert.assertFalse(StringIterate.allSatisfy("\uD840\uDC00\uD840\uDC03\uD83D\uDE09", CodePointPredicate.IS_BMP));
+    }
+
+    @Test
     public void anySatisfy()
     {
         Assert.assertTrue(StringIterate.anySatisfy("MARY", CharPredicates.isUpperCase()));
@@ -158,6 +440,13 @@ public class StringIterateTest
     }
 
     @Test
+    public void anySatisfyCodePointUnicode()
+    {
+        Assert.assertTrue(StringIterate.anySatisfy("\u3042\u3044\u3046", CodePointPredicate.IS_BMP));
+        Assert.assertFalse(StringIterate.anySatisfy("\uD840\uDC00\uD840\uDC03\uD83D\uDE09", CodePointPredicate.IS_BMP));
+    }
+
+    @Test
     public void noneSatisfy()
     {
         Assert.assertFalse(StringIterate.noneSatisfy("MaRy", CharPredicates.isUpperCase()));
@@ -169,6 +458,13 @@ public class StringIterateTest
     {
         Assert.assertFalse(StringIterate.noneSatisfy("MaRy", CodePointPredicate.IS_UPPERCASE));
         Assert.assertTrue(StringIterate.noneSatisfy("mary", CodePointPredicate.IS_UPPERCASE));
+    }
+
+    @Test
+    public void noneSatisfyCodePointUnicode()
+    {
+        Assert.assertFalse(StringIterate.noneSatisfy("\u3042\u3044\u3046", CodePointPredicate.IS_BMP));
+        Assert.assertTrue(StringIterate.noneSatisfy("\uD840\uDC00\uD840\uDC03\uD83D\uDE09", CodePointPredicate.IS_BMP));
     }
 
     @Test
@@ -340,6 +636,14 @@ public class StringIterateTest
     }
 
     @Test
+    public void forEachCodePointUnicode()
+    {
+        StringBuilder builder = new StringBuilder();
+        StringIterate.forEach("\u3042\uD840\uDC00\u3044\uD840\uDC03\u3046\uD83D\uDE09", (CodePointProcedure) builder::appendCodePoint);
+        Assert.assertEquals("\u3042\uD840\uDC00\u3044\uD840\uDC03\u3046\uD83D\uDE09", builder.toString());
+    }
+
+    @Test
     public void reverseForEach()
     {
         StringBuilder builder = new StringBuilder();
@@ -355,6 +659,33 @@ public class StringIterateTest
         StringBuilder builder = new StringBuilder();
         StringIterate.reverseForEach("1a2b3c", (CodePointProcedure) builder::appendCodePoint);
         Assert.assertEquals("c3b2a1", builder.toString());
+
+        StringIterate.reverseForEach("", (int codePoint) -> Assert.fail());
+    }
+
+    @Test
+    public void reverseForEachCodePointUnicode()
+    {
+        StringBuilder builder = new StringBuilder();
+        StringIterate.reverseForEach("\u3042\uD840\uDC00\u3044\uD840\uDC03\u3046\uD83D\uDE09", (CodePointProcedure) builder::appendCodePoint);
+        Assert.assertEquals("\uD83D\uDE09\u3046\uD840\uDC03\u3044\uD840\uDC00\u3042", builder.toString());
+        StringIterate.reverseForEach("", (int codePoint) -> Assert.fail());
+    }
+
+    @Test
+    public void reverseForEachCodePointInvalidUnicode()
+    {
+        StringBuilder builder = new StringBuilder();
+        StringIterate.reverseForEach("\u3042\uDC00\uD840\u3044\uDC03\uD840\u3046\uDE09\uD83D", (CodePointProcedure) builder::appendCodePoint);
+        Assert.assertEquals("\uD83D\uDE09\u3046\uD840\uDC03\u3044\uD840\uDC00\u3042", builder.toString());
+
+        StringBuilder builder2 = new StringBuilder();
+        StringIterate.reverseForEach("\u3042\uD840\u3044\uD840\u3046\uD840", (CodePointProcedure) builder2::appendCodePoint);
+        Assert.assertEquals("\uD840\u3046\uD840\u3044\uD840\u3042", builder2.toString());
+
+        StringBuilder builder3 = new StringBuilder();
+        StringIterate.reverseForEach("\u3042\uDC00\u3044\uDC03\u3046\uDC06", (CodePointProcedure) builder3::appendCodePoint);
+        Assert.assertEquals("\uDC06\u3046\uDC03\u3044\uDC00\u3042", builder3.toString());
 
         StringIterate.reverseForEach("", (int codePoint) -> Assert.fail());
     }

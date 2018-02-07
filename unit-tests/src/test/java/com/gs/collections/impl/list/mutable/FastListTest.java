@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Goldman Sachs.
+ * Copyright 2015 Goldman Sachs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,7 +59,9 @@ import com.gs.collections.impl.utility.ListIterate;
 import org.junit.Assert;
 import org.junit.Test;
 
-import static com.gs.collections.impl.factory.Iterables.*;
+import static com.gs.collections.impl.factory.Iterables.iList;
+import static com.gs.collections.impl.factory.Iterables.mList;
+import static com.gs.collections.impl.factory.Iterables.mSet;
 
 /**
  * JUnit test for {@link FastList}.
@@ -444,17 +446,7 @@ public class FastListTest extends AbstractListTestCase
     public void testRemoveUsingPredicate()
     {
         MutableList<Integer> objects = FastList.newListWith(1, 2, 3, null);
-        objects.removeIf(Predicates.isNull());
-        Verify.assertSize(3, objects);
-        Verify.assertContainsAll(objects, 1, 2, 3);
-    }
-
-    @Override
-    @Test
-    public void removeIfWith()
-    {
-        MutableList<Integer> objects = FastList.newListWith(1, 2, 3, null);
-        objects.removeIfWith((each, ignored) -> each == null, null);
+        Assert.assertTrue(objects.removeIf(Predicates.isNull()));
         Verify.assertSize(3, objects);
         Verify.assertContainsAll(objects, 1, 2, 3);
     }
@@ -693,13 +685,22 @@ public class FastListTest extends AbstractListTestCase
     {
         super.addAll();
 
-        FastList<Integer> integers = FastList.newList();
-        Assert.assertTrue(integers.addAll(mList(1, 2, 3, 4)));
-        Verify.assertContainsAll(integers, 1, 2, 3, 4);
-        Assert.assertTrue(integers.addAll(FastList.<Integer>newList(4).with(1, 2, 3, 4)));
-        Verify.assertStartsWith(integers, 1, 2, 3, 4, 1, 2, 3, 4);
-        Assert.assertTrue(integers.addAll(mSet(5)));
-        Verify.assertStartsWith(integers, 1, 2, 3, 4, 1, 2, 3, 4, 5);
+        MutableList<Integer> integers1 = FastList.newList();
+        Assert.assertTrue(integers1.addAll(mList(1, 2, 3, 4)));
+        Verify.assertListsEqual(FastList.newListWith(1, 2, 3, 4), integers1);
+        Assert.assertTrue(integers1.addAll(FastList.<Integer>newList(4).with(1, 2, 3, 4)));
+        Verify.assertListsEqual(FastList.newListWith(1, 2, 3, 4, 1, 2, 3, 4), integers1);
+        Assert.assertTrue(integers1.addAll(mSet(5)));
+        Verify.assertListsEqual(FastList.newListWith(1, 2, 3, 4, 1, 2, 3, 4, 5), integers1);
+
+        MutableList<Integer> integers2 = FastList.newListWith(0);
+        Assert.assertTrue(integers2.addAll(mList(1, 2, 3, 4)));
+        Verify.assertListsEqual(FastList.newListWith(0, 1, 2, 3, 4), integers2);
+        Assert.assertTrue(integers2.addAll(FastList.<Integer>newList(4).with(1, 2, 3, 4)));
+        Verify.assertListsEqual(FastList.newListWith(0, 1, 2, 3, 4, 1, 2, 3, 4), integers2);
+        Assert.assertTrue(integers2.addAll(mSet(5)));
+        Verify.assertListsEqual(FastList.newListWith(0, 1, 2, 3, 4, 1, 2, 3, 4, 5), integers2);
+
         Verify.assertThrows(IndexOutOfBoundsException.class, () -> FastList.newList().addAll(1, null));
     }
 
@@ -711,11 +712,11 @@ public class FastListTest extends AbstractListTestCase
 
         FastList<Integer> integers = FastList.newList();
         Assert.assertTrue(integers.addAllIterable(iList(1, 2, 3, 4)));
-        Verify.assertContainsAll(integers, 1, 2, 3, 4);
+        Verify.assertListsEqual(FastList.newListWith(1, 2, 3, 4), integers);
         Assert.assertTrue(integers.addAllIterable(FastList.<Integer>newList(4).with(1, 2, 3, 4)));
-        Verify.assertStartsWith(integers, 1, 2, 3, 4, 1, 2, 3, 4);
+        Verify.assertListsEqual(FastList.newListWith(1, 2, 3, 4, 1, 2, 3, 4), integers);
         Assert.assertTrue(integers.addAllIterable(mSet(5)));
-        Verify.assertStartsWith(integers, 1, 2, 3, 4, 1, 2, 3, 4, 5);
+        Verify.assertListsEqual(FastList.newListWith(1, 2, 3, 4, 1, 2, 3, 4, 5), integers);
     }
 
     @Test
@@ -1066,7 +1067,7 @@ public class FastListTest extends AbstractListTestCase
             FastList<Integer> actual = FastList.newList(Interval.oneTo(i));
             for (int j = 0; j < 3; j++)
             {
-                Collections.shuffle(actual);
+                actual.shuffleThis();
                 Assert.assertEquals(Interval.oneTo(i), actual.sortThis());
                 Assert.assertEquals(Interval.oneTo(i).reverseThis(), actual.sortThis(Collections.<Integer>reverseOrder()));
             }

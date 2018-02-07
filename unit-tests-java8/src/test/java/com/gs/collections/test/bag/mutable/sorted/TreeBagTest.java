@@ -20,7 +20,6 @@ import com.gs.collections.api.bag.sorted.MutableSortedBag;
 import com.gs.collections.impl.bag.sorted.mutable.TreeBag;
 import com.gs.collections.impl.block.factory.Comparators;
 import com.gs.junit.runners.Java8Runner;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(Java8Runner.class)
@@ -31,12 +30,5 @@ public class TreeBagTest implements MutableSortedBagTestCase
     public final <T> MutableSortedBag<T> newWith(T... elements)
     {
         return TreeBag.newBagWith(Comparators.reverseNaturalOrder(), elements);
-    }
-
-    @Override
-    @Test(expected = UnsupportedOperationException.class)
-    public void MutableCollection_toImmutable()
-    {
-        MutableSortedBagTestCase.super.MutableCollection_toImmutable();
     }
 }

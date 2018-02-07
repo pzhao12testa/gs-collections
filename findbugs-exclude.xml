@@ -44,6 +44,7 @@
             <Class name="com.gs.collections.impl.set.sorted.mutable.UnmodifiableSortedSet" />
             <Class name="com.gs.collections.impl.bag.sorted.mutable.SynchronizedSortedBag" />
             <Class name="com.gs.collections.impl.bag.sorted.mutable.UnmodifiableSortedBag" />
+            <Class name="com.gs.collections.impl.bag.sorted.mutable.TreeBag" />
         </Or>
     </Match>
 
@@ -223,6 +224,7 @@
             <Class name="com.gs.collections.impl.multimap.set.ImmutableSetMultimapImpl" />
             <Class name="com.gs.collections.impl.multimap.bag.ImmutableBagMultimapImpl" />
             <Class name="com.gs.collections.impl.multimap.set.sorted.ImmutableSortedSetMultimapImpl" />
+            <Class name="com.gs.collections.impl.multimap.bag.sorted.immutable.ImmutableSortedBagMultimapImpl" />
             <Class name="com.gs.collections.impl.bimap.immutable.ImmutableHashBiMap" />
             <Class name="com.gs.collections.impl.bimap.immutable.AbstractImmutableBiMap$Inverse" />
             <Class name="com.gs.collections.impl.bag.mutable.SynchronizedBag" />
@@ -320,6 +322,22 @@
             <Class name="com.gs.collections.impl.map.mutable.primitive.ObjectCharHashMap$2" />
             <Class name="com.gs.collections.impl.map.mutable.primitive.ObjectBooleanHashMap$1" />
             <Class name="com.gs.collections.impl.map.mutable.primitive.ObjectBooleanHashMap$2" />
+            <Class name="com.gs.collections.impl.map.mutable.primitive.ObjectIntHashMapWithHashingStrategy$1" />
+            <Class name="com.gs.collections.impl.map.mutable.primitive.ObjectIntHashMapWithHashingStrategy$2" />
+            <Class name="com.gs.collections.impl.map.mutable.primitive.ObjectShortHashMapWithHashingStrategy$1" />
+            <Class name="com.gs.collections.impl.map.mutable.primitive.ObjectShortHashMapWithHashingStrategy$2" />
+            <Class name="com.gs.collections.impl.map.mutable.primitive.ObjectLongHashMapWithHashingStrategy$1" />
+            <Class name="com.gs.collections.impl.map.mutable.primitive.ObjectLongHashMapWithHashingStrategy$2" />
+            <Class name="com.gs.collections.impl.map.mutable.primitive.ObjectFloatHashMapWithHashingStrategy$1" />
+            <Class name="com.gs.collections.impl.map.mutable.primitive.ObjectFloatHashMapWithHashingStrategy$2" />
+            <Class name="com.gs.collections.impl.map.mutable.primitive.ObjectDoubleHashMapWithHashingStrategy$1" />
+            <Class name="com.gs.collections.impl.map.mutable.primitive.ObjectDoubleHashMapWithHashingStrategy$2" />
+            <Class name="com.gs.collections.impl.map.mutable.primitive.ObjectByteHashMapWithHashingStrategy$1" />
+            <Class name="com.gs.collections.impl.map.mutable.primitive.ObjectByteHashMapWithHashingStrategy$2" />
+            <Class name="com.gs.collections.impl.map.mutable.primitive.ObjectCharHashMapWithHashingStrategy$1" />
+            <Class name="com.gs.collections.impl.map.mutable.primitive.ObjectCharHashMapWithHashingStrategy$2" />
+            <Class name="com.gs.collections.impl.map.mutable.primitive.ObjectBooleanHashMapWithHashingStrategy$1" />
+            <Class name="com.gs.collections.impl.map.mutable.primitive.ObjectBooleanHashMapWithHashingStrategy$2" />
             <Class name="com.gs.collections.impl.map.strategy.mutable.UnifiedMapWithHashingStrategy$1" />
             <Class name="com.gs.collections.impl.map.strategy.mutable.UnifiedMapWithHashingStrategy$2" />
         </Or>

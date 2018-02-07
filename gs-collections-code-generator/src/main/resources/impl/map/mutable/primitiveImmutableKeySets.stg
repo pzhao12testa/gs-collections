@@ -149,6 +149,14 @@ class <className> extends AbstractImmutable<name>Set implements Serializable
 
     public void forEach(<name>Procedure procedure)
     {
+        this.each(procedure);
+    }
+
+    /**
+     * @since 7.0.
+     */
+    public void each(<name>Procedure procedure)
+    {
         <forEachKey("executeProcedure")>
     }
 
@@ -207,6 +215,7 @@ class <className> extends AbstractImmutable<name>Set implements Serializable
     public <wideType.(type)> sum()
     {
         <wideType.(type)> result = <wideZero.(type)>;
+        <wideType.(type)> compensation = <wideZero.(type)>;
         <forEachKey("sum")>
         return result;
     }
@@ -409,7 +418,10 @@ result = function.valueOf(result, <key>);
 >>
 
 sum(key) ::= <<
-result += <key>;
+<wideType.(type)> adjustedValue = <key> - compensation;
+<wideType.(type)> nextSum = result + adjustedValue;
+compensation = nextSum - result - adjustedValue;
+result = nextSum;
 >>
 
 collect(key) ::= <<

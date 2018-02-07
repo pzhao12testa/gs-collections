@@ -43,6 +43,7 @@ import com.gs.collections.api.list.primitive.ShortList;
 import com.gs.collections.api.map.MapIterable;
 import com.gs.collections.api.multimap.list.ListMultimap;
 import com.gs.collections.api.multimap.sortedset.SortedSetMultimap;
+import com.gs.collections.api.ordered.ReversibleIterable;
 import com.gs.collections.api.partition.list.PartitionList;
 import com.gs.collections.api.tuple.Pair;
 
@@ -50,13 +51,14 @@ import com.gs.collections.api.tuple.Pair;
  * An iterable Map whose elements are sorted.
  */
 public interface SortedMapIterable<K, V>
-        extends MapIterable<K, V> // TODO: OrderedIterable<V>
+        extends MapIterable<K, V>, ReversibleIterable<V>
 {
     Comparator<? super K> comparator();
 
+    // TODO: Keys could be ordered
     SortedSetMultimap<V, K> flip();
 
-    // TODO
+    // TODO: When we have implementations of linked hash maps
     // OrderedMapIterable<V, K> flipUniqueValues();
 
     SortedMapIterable<K, V> select(Predicate2<? super K, ? super V> predicate);
@@ -112,6 +114,21 @@ public interface SortedMapIterable<K, V>
     <VV> ListMultimap<VV, V> groupBy(Function<? super V, ? extends VV> function);
 
     <VV> ListMultimap<VV, V> groupByEach(Function<? super V, ? extends Iterable<VV>> function);
+
+    SortedMapIterable<K, V> toReversed();
+
+    SortedMapIterable<K, V> take(int count);
+
+    SortedMapIterable<K, V> takeWhile(Predicate<? super V> predicate);
+
+    SortedMapIterable<K, V> drop(int count);
+
+    SortedMapIterable<K, V> dropWhile(Predicate<? super V> predicate);
+
+    // TODO: PartitionSortedMapIterable?
+    PartitionList<V> partitionWhile(Predicate<? super V> predicate);
+
+    ListIterable<V> distinct();
 
     /**
      * Converts the SortedMapIterable to an immutable implementation. Returns this for immutable maps.

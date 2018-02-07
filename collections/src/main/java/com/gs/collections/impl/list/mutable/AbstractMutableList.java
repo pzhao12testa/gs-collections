@@ -24,9 +24,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
+import java.util.Random;
 import java.util.RandomAccess;
 import java.util.concurrent.ExecutorService;
 
+import com.gs.collections.api.block.HashingStrategy;
 import com.gs.collections.api.block.function.Function;
 import com.gs.collections.api.block.function.Function0;
 import com.gs.collections.api.block.function.Function2;
@@ -67,6 +69,7 @@ import com.gs.collections.api.tuple.Pair;
 import com.gs.collections.api.tuple.Twin;
 import com.gs.collections.impl.block.factory.Comparators;
 import com.gs.collections.impl.block.factory.Functions;
+import com.gs.collections.impl.block.factory.HashingStrategies;
 import com.gs.collections.impl.block.factory.Predicates2;
 import com.gs.collections.impl.collection.mutable.AbstractMutableCollection;
 import com.gs.collections.impl.factory.Lists;
@@ -234,15 +237,15 @@ public abstract class AbstractMutableList<T>
     }
 
     @Override
-    public void removeIf(Predicate<? super T> predicate)
+    public boolean removeIf(Predicate<? super T> predicate)
     {
-        ListIterate.removeIf(this, predicate);
+        return ListIterate.removeIf(this, predicate);
     }
 
     @Override
-    public <P> void removeIfWith(Predicate2<? super T, ? super P> predicate, P parameter)
+    public <P> boolean removeIfWith(Predicate2<? super T, ? super P> predicate, P parameter)
     {
-        ListIterate.removeIfWith(this, predicate, parameter);
+        return ListIterate.removeIfWith(this, predicate, parameter);
     }
 
     public <V> MutableList<V> collect(Function<? super T, ? extends V> function)
@@ -483,7 +486,12 @@ public abstract class AbstractMutableList<T>
 
     public MutableList<T> distinct()
     {
-        return ListIterate.distinct(this, this.newEmpty());
+        return ListIterate.distinct(this);
+    }
+
+    public MutableList<T> distinct(HashingStrategy<? super T> hashingStrategy)
+    {
+        return ListIterate.distinct(this, hashingStrategy);
     }
 
     @Override
@@ -735,6 +743,18 @@ public abstract class AbstractMutableList<T>
     public MutableList<T> reverseThis()
     {
         Collections.reverse(this);
+        return this;
+    }
+
+    public MutableList<T> shuffleThis()
+    {
+        Collections.shuffle(this);
+        return this;
+    }
+
+    public MutableList<T> shuffleThis(Random rnd)
+    {
+        Collections.shuffle(this, rnd);
         return this;
     }
 

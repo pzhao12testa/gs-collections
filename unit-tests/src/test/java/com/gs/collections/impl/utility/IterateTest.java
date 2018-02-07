@@ -1362,15 +1362,36 @@ public class IterateTest
     {
         MutableList<Integer> integers = Interval.oneTo(5).toList();
         this.assertRemoveIfFromList(integers);
-        this.assertRemoveIfFromList(Collections.synchronizedList(integers));
-        this.assertRemoveIfFromList(FastList.newList(integers));
+
+        MutableList<Integer> integers2 = Interval.oneTo(5).toList();
+        this.assertRemoveIfFromList(Collections.synchronizedList(integers2));
+
+        MutableList<Integer> integers3 = Interval.oneTo(5).toList();
+        this.assertRemoveIfFromList(FastList.newList(integers3));
         Verify.assertThrows(IllegalArgumentException.class, () -> Iterate.removeIf(null, null));
+    }
+
+    @Test
+    public void removeIfWith()
+    {
+        MutableList<Integer> objects = FastList.newList(Lists.fixedSize.of(1, 2, 3, null));
+        Assert.assertTrue(Iterate.removeIfWith(objects, (each1, ignored1) -> each1 == null, null));
+        Verify.assertSize(3, objects);
+        Verify.assertContainsAll(objects, 1, 2, 3);
+
+        MutableList<Integer> objects2 = FastList.newList(Lists.fixedSize.of(null, 1, 2, 3));
+        Assert.assertTrue(Iterate.removeIfWith(objects2, (each, ignored) -> each == null, null));
+        Verify.assertSize(3, objects2);
+        Verify.assertContainsAll(objects2, 1, 2, 3);
+
+        Verify.assertThrows(IllegalArgumentException.class, () -> Iterate.removeIfWith(null, null, null));
     }
 
     private void assertRemoveIfFromList(List<Integer> newIntegers)
     {
-        Collection<Integer> result = Iterate.removeIf(newIntegers, IntegerPredicates.isEven());
-        Assert.assertSame(newIntegers, result);
+        Assert.assertTrue(Iterate.removeIf(newIntegers, IntegerPredicates.isEven()));
+        Assert.assertFalse(Iterate.removeIf(FastList.newListWith(1, 3, 5), IntegerPredicates.isEven()));
+        Assert.assertFalse(Iterate.removeIf(FastList.newList(), IntegerPredicates.isEven()));
         Verify.assertContainsAll(newIntegers, 1, 3, 5);
         Verify.assertSize(3, newIntegers);
     }
@@ -1386,8 +1407,7 @@ public class IterateTest
     public void removeIfAll()
     {
         MutableList<Integer> integers = Interval.oneTo(5).toList();
-        Collection<Integer> result = Iterate.removeIf(integers, ignored -> true);
-        Assert.assertSame(integers, result);
+        Assert.assertTrue(Iterate.removeIf(integers, ignored -> true));
         Verify.assertSize(0, integers);
     }
 
@@ -1395,8 +1415,7 @@ public class IterateTest
     public void removeIfNone()
     {
         MutableList<Integer> integers = Interval.oneTo(5).toList();
-        Collection<Integer> result = Iterate.removeIf(integers, ignored -> false);
-        Assert.assertSame(integers, result);
+        Assert.assertFalse(Iterate.removeIf(integers, ignored -> false));
         Verify.assertSize(5, integers);
     }
 
@@ -1404,21 +1423,60 @@ public class IterateTest
     public void removeIfFromSet()
     {
         MutableSet<Integer> integers = Interval.toSet(1, 5);
-        Collection<Integer> result = Iterate.removeIf(integers, IntegerPredicates.isEven());
-        Assert.assertSame(integers, result);
+        Assert.assertTrue(Iterate.removeIf(integers, IntegerPredicates.isEven()));
         Verify.assertContainsAll(integers, 1, 3, 5);
         Verify.assertSize(3, integers);
+    }
+
+    @Test
+    public void removeIfWithFastList()
+    {
+        MutableList<Integer> objects = FastList.newListWith(1, 2, 3, null);
+        Assert.assertTrue(Iterate.removeIfWith(objects, (each1, ignored1) -> each1 == null, null));
+        Verify.assertSize(3, objects);
+        Verify.assertContainsAll(objects, 1, 2, 3);
+        MutableList<Integer> objects1 = FastList.newListWith(null, 1, 2, 3);
+        Assert.assertTrue(Iterate.removeIfWith(objects1, (each, ignored) -> each == null, null));
+        Verify.assertSize(3, objects1);
+        Verify.assertContainsAll(objects1, 1, 2, 3);
+    }
+
+    @Test
+    public void removeIfWithRandomAccess()
+    {
+        List<Integer> objects = Collections.synchronizedList(new ArrayList<>(Lists.fixedSize.of(1, 2, 3, null)));
+        Assert.assertTrue(Iterate.removeIfWith(objects, (each1, ignored1) -> each1 == null, null));
+        Verify.assertSize(3, objects);
+        Verify.assertContainsAll(objects, 1, 2, 3);
+        List<Integer> objects1 =
+                Collections.synchronizedList(new ArrayList<>(Lists.fixedSize.of(null, 1, 2, 3)));
+        Assert.assertTrue(Iterate.removeIfWith(objects1, (each, ignored) -> each == null, null));
+        Verify.assertSize(3, objects1);
+        Verify.assertContainsAll(objects1, 1, 2, 3);
+    }
+
+    @Test
+    public void removeIfWithLinkedList()
+    {
+        List<Integer> objects = new LinkedList<>(Lists.fixedSize.of(1, 2, 3, null));
+        Assert.assertTrue(Iterate.removeIfWith(objects, (each1, ignored1) -> each1 == null, null));
+        Verify.assertSize(3, objects);
+        Verify.assertContainsAll(objects, 1, 2, 3);
+        List<Integer> objects1 = new LinkedList<>(Lists.fixedSize.of(null, 1, 2, 3));
+        Assert.assertTrue(Iterate.removeIfWith(objects1, (each, ignored) -> each == null, null));
+        Verify.assertSize(3, objects1);
+        Verify.assertContainsAll(objects1, 1, 2, 3);
     }
 
     @Test
     public void injectIntoIfProcedure()
     {
         Integer newItemToIndex = 99;
-        MutableMap<String, Integer> index1 = createPretendIndex(1);
-        MutableMap<String, Integer> index2 = createPretendIndex(2);
-        MutableMap<String, Integer> index3 = createPretendIndex(3);
-        MutableMap<String, Integer> index4 = createPretendIndex(4);
-        MutableMap<String, Integer> index5 = createPretendIndex(5);
+        MutableMap<String, Integer> index1 = IterateTest.createPretendIndex(1);
+        MutableMap<String, Integer> index2 = IterateTest.createPretendIndex(2);
+        MutableMap<String, Integer> index3 = IterateTest.createPretendIndex(3);
+        MutableMap<String, Integer> index4 = IterateTest.createPretendIndex(4);
+        MutableMap<String, Integer> index5 = IterateTest.createPretendIndex(5);
         MutableMap<String, MutableMap<String, Integer>> allIndexes = UnifiedMap.newMapWith(
                 Tuples.pair("pretend index 1", index1),
                 Tuples.pair("pretend index 2", index2),
@@ -1627,64 +1685,9 @@ public class IterateTest
     }
 
     @Test
-    public void removeIfWith()
-    {
-        MutableList<Integer> objects = FastList.newList(Lists.fixedSize.of(1, 2, 3, null));
-        Iterate.removeIfWith(objects, (each1, ignored1) -> each1 == null, null);
-        Verify.assertSize(3, objects);
-        Verify.assertContainsAll(objects, 1, 2, 3);
-        MutableList<Integer> objects1 = FastList.newList(Lists.fixedSize.of(null, 1, 2, 3));
-        Iterate.removeIfWith(objects1, (each, ignored) -> each == null, null);
-        Verify.assertSize(3, objects1);
-        Verify.assertContainsAll(objects1, 1, 2, 3);
-        Verify.assertThrows(IllegalArgumentException.class, () -> Iterate.removeIfWith(null, null, null));
-    }
-
-    @Test
-    public void removeIfWithFastList()
-    {
-        MutableList<Integer> objects = FastList.newListWith(1, 2, 3, null);
-        Iterate.removeIfWith(objects, (each1, ignored1) -> each1 == null, null);
-        Verify.assertSize(3, objects);
-        Verify.assertContainsAll(objects, 1, 2, 3);
-        MutableList<Integer> objects1 = FastList.newListWith(null, 1, 2, 3);
-        Iterate.removeIfWith(objects1, (each, ignored) -> each == null, null);
-        Verify.assertSize(3, objects1);
-        Verify.assertContainsAll(objects1, 1, 2, 3);
-    }
-
-    @Test
-    public void removeIfWithRandomAccess()
-    {
-        List<Integer> objects = Collections.synchronizedList(new ArrayList<>(Lists.fixedSize.of(1, 2, 3, null)));
-        Iterate.removeIfWith(objects, (each1, ignored1) -> each1 == null, null);
-        Verify.assertSize(3, objects);
-        Verify.assertContainsAll(objects, 1, 2, 3);
-        List<Integer> objects1 =
-                Collections.synchronizedList(new ArrayList<>(Lists.fixedSize.of(null, 1, 2, 3)));
-        Iterate.removeIfWith(objects1, (each, ignored) -> each == null, null);
-        Verify.assertSize(3, objects1);
-        Verify.assertContainsAll(objects1, 1, 2, 3);
-    }
-
-    @Test
-    public void removeIfWithLinkedList()
-    {
-        List<Integer> objects = new LinkedList<>(Lists.fixedSize.of(1, 2, 3, null));
-        Iterate.removeIfWith(objects, (each1, ignored1) -> each1 == null, null);
-        Verify.assertSize(3, objects);
-        Verify.assertContainsAll(objects, 1, 2, 3);
-        List<Integer> objects1 = new LinkedList<>(Lists.fixedSize.of(null, 1, 2, 3));
-        Iterate.removeIfWith(objects1, (each, ignored) -> each == null, null);
-        Verify.assertSize(3, objects1);
-        Verify.assertContainsAll(objects1, 1, 2, 3);
-    }
-
-    @Test
     public void sortThis()
     {
-        MutableList<Integer> list = Interval.oneTo(5).toList();
-        Collections.shuffle(list);
+        MutableList<Integer> list = Interval.oneTo(5).toList().shuffleThis();
         Verify.assertStartsWith(Iterate.sortThis(list), 1, 2, 3, 4, 5);
         List<Integer> list3 = Interval.oneTo(5).addAllTo(new LinkedList<>());
         Collections.shuffle(list3);
@@ -1700,11 +1703,11 @@ public class IterateTest
     {
         MutableList<Integer> list = Interval.oneTo(5).toList();
         Interval.oneTo(5).addAllTo(list);
-        Collections.shuffle(list);
+        list.shuffleThis();
         Verify.assertStartsWith(Iterate.sortThis(list, Predicates2.<Integer>lessThan()), 1, 1, 2, 2, 3, 3, 4, 4, 5, 5);
         MutableList<Integer> list2 = Interval.oneTo(5).toList();
         Interval.oneTo(5).addAllTo(list2);
-        Collections.shuffle(list2);
+        list2.shuffleThis();
         Verify.assertStartsWith(Iterate.sortThis(list2, Predicates2.<Integer>greaterThan()), 5, 5, 4, 4, 3, 3, 2, 2, 1, 1);
         List<Integer> list3 = Interval.oneTo(5).addAllTo(new LinkedList<>());
         Interval.oneTo(5).addAllTo(list3);
@@ -1717,7 +1720,7 @@ public class IterateTest
     {
         MutableList<Integer> list = Interval.oneTo(5).toList();
         Interval.oneTo(5).addAllTo(list);
-        Collections.shuffle(list);
+        list.shuffleThis();
         MutableList<Integer> sortedList = Iterate.sortThisBy(list, String::valueOf);
         Assert.assertSame(list, sortedList);
         Assert.assertEquals(Lists.immutable.of(1, 1, 2, 2, 3, 3, 4, 4, 5, 5), list);

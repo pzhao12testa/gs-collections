@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Goldman Sachs.
+ * Copyright 2015 Goldman Sachs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package com.gs.collections.impl.list.mutable;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.ListIterator;
+import java.util.Random;
 
 import com.gs.collections.api.LazyIterable;
 import com.gs.collections.api.list.ImmutableList;
@@ -27,6 +28,7 @@ import com.gs.collections.api.partition.list.PartitionMutableList;
 import com.gs.collections.impl.Counter;
 import com.gs.collections.impl.block.factory.Comparators;
 import com.gs.collections.impl.block.factory.Functions;
+import com.gs.collections.impl.block.factory.HashingStrategies;
 import com.gs.collections.impl.block.factory.Predicates;
 import com.gs.collections.impl.factory.Lists;
 import com.gs.collections.impl.test.SerializeTestHelper;
@@ -35,7 +37,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import static com.gs.collections.impl.factory.Iterables.*;
+import static com.gs.collections.impl.factory.Iterables.iList;
 
 /**
  * JUnit test for {@link UnmodifiableMutableList}.
@@ -169,6 +171,13 @@ public class UnmodifiableMutableListTest
     }
 
     @Test
+    public void shuffleThis()
+    {
+        Verify.assertThrows(UnsupportedOperationException.class, () -> this.unmodifiableList.shuffleThis(null));
+        Verify.assertThrows(UnsupportedOperationException.class, () -> this.unmodifiableList.shuffleThis(new Random(4)));
+    }
+
+    @Test
     public void reverseThis()
     {
         Verify.assertThrows(
@@ -269,10 +278,18 @@ public class UnmodifiableMutableListTest
     }
 
     @Test
-    public void testDistinct()
+    public void distinct()
     {
         MutableList<Integer> list = UnmodifiableMutableList.of(FastList.newListWith(3, 1, 2, 2, 1, 3));
         Verify.assertListsEqual(FastList.newListWith(3, 1, 2), list.distinct());
+    }
+
+    @Test
+    public void distinctWithHashingStrategy()
+    {
+        MutableList<String> letters = UnmodifiableMutableList.of(FastList.<String>newListWith("a", "A", "b", "C", "b", "D", "E", "e"));
+        MutableList<String> expectedLetters = UnmodifiableMutableList.of(FastList.<String>newListWith("a", "b", "C", "D", "E"));
+        Verify.assertListsEqual(letters.distinct(HashingStrategies.fromFunction(String::toLowerCase)), expectedLetters);
     }
 
     @Test

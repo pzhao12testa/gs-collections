@@ -27,6 +27,7 @@ import java.util.NoSuchElementException;
 import java.util.RandomAccess;
 
 import com.gs.collections.api.RichIterable;
+import com.gs.collections.api.block.HashingStrategy;
 import com.gs.collections.api.block.function.Function;
 import com.gs.collections.api.block.function.Function0;
 import com.gs.collections.api.block.function.Function2;
@@ -75,6 +76,7 @@ import com.gs.collections.api.set.MutableSet;
 import com.gs.collections.api.tuple.Pair;
 import com.gs.collections.api.tuple.Twin;
 import com.gs.collections.impl.block.factory.Functions0;
+import com.gs.collections.impl.block.factory.HashingStrategies;
 import com.gs.collections.impl.block.procedure.MutatingAggregationProcedure;
 import com.gs.collections.impl.block.procedure.NonMutatingAggregationProcedure;
 import com.gs.collections.impl.factory.Lists;
@@ -93,6 +95,7 @@ import com.gs.collections.impl.map.mutable.primitive.ObjectLongHashMap;
 import com.gs.collections.impl.multimap.list.FastListMultimap;
 import com.gs.collections.impl.partition.list.PartitionFastList;
 import com.gs.collections.impl.set.mutable.UnifiedSet;
+import com.gs.collections.impl.set.strategy.mutable.UnifiedSetWithHashingStrategy;
 import com.gs.collections.impl.tuple.Tuples;
 import com.gs.collections.impl.utility.Iterate;
 import com.gs.collections.impl.utility.ListIterate;
@@ -1057,34 +1060,39 @@ public final class RandomAccessListIterate
         return partitionFastList;
     }
 
-    public static <T> List<T> removeIf(List<T> list, Predicate<? super T> predicate)
+    public static <T> boolean removeIf(List<T> list, Predicate<? super T> predicate)
     {
+        boolean changed = false;
         for (int i = 0; i < list.size(); i++)
         {
             T each = list.get(i);
             if (predicate.accept(each))
             {
                 list.remove(i--);
+                changed = true;
             }
         }
-        return list;
+        return changed;
     }
 
-    public static <T, P> List<T> removeIfWith(List<T> list, Predicate2<? super T, ? super P> predicate, P parameter)
+    public static <T, P> boolean removeIfWith(List<T> list, Predicate2<? super T, ? super P> predicate, P parameter)
     {
+        boolean changed = false;
         for (int i = 0; i < list.size(); i++)
         {
             T each = list.get(i);
             if (predicate.accept(each, parameter))
             {
                 list.remove(i--);
+                changed = true;
             }
         }
-        return list;
+        return changed;
     }
 
-    public static <T> List<T> removeIf(List<T> list, Predicate<? super T> predicate, Procedure<? super T> procedure)
+    public static <T> boolean removeIf(List<T> list, Predicate<? super T> predicate, Procedure<? super T> procedure)
     {
+        boolean changed = false;
         for (int i = 0; i < list.size(); i++)
         {
             T each = list.get(i);
@@ -1092,9 +1100,26 @@ public final class RandomAccessListIterate
             {
                 procedure.value(each);
                 list.remove(i--);
+                changed = true;
             }
         }
-        return list;
+        return changed;
+    }
+
+    public static <T, P> boolean removeIfWith(List<T> list, Predicate2<? super T, ? super P> predicate, P parameter, Procedure<? super T> procedure)
+    {
+        boolean changed = false;
+        for (int i = 0; i < list.size(); i++)
+        {
+            T each = list.get(i);
+            if (predicate.accept(each, parameter))
+            {
+                procedure.value(each);
+                list.remove(i--);
+                changed = true;
+            }
+        }
+        return changed;
     }
 
     /**
@@ -1184,7 +1209,11 @@ public final class RandomAccessListIterate
         return targetCollection;
     }
 
-    public static <T, R extends Collection<T>> R distinct(List<T> list, R targetCollection)
+    /**
+     * @deprecated in 7.0.
+     */
+    @Deprecated
+    public static <T, R extends List<T>> R distinct(List<T> list, R targetList)
     {
         MutableSet<T> seenSoFar = UnifiedSet.newSet();
         int size = list.size();
@@ -1193,10 +1222,37 @@ public final class RandomAccessListIterate
             T item = list.get(i);
             if (seenSoFar.add(item))
             {
-                targetCollection.add(item);
+                targetList.add(item);
             }
         }
-        return targetCollection;
+        return targetList;
+    }
+
+    /**
+     * @since 7.0.
+     */
+    public static <T> MutableList<T> distinct(List<T> list)
+    {
+        return RandomAccessListIterate.distinct(list, FastList.<T>newList());
+    }
+
+    /**
+     * @since 7.0.
+     */
+    public static <T> MutableList<T> distinct(List<T> list, HashingStrategy<? super T> hashingStrategy)
+    {
+        MutableSet<T> seenSoFar = UnifiedSetWithHashingStrategy.newSet(hashingStrategy);
+        FastList<T> result = FastList.newList();
+        int size = list.size();
+        for (int i = 0; i < size; i++)
+        {
+            T item = list.get(i);
+            if (seenSoFar.add(item))
+            {
+                result.add(item);
+            }
+        }
+        return result;
     }
 
     /**

@@ -18,6 +18,8 @@ package com.gs.collections.impl.collection.mutable;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
+import java.util.RandomAccess;
 
 import com.gs.collections.api.RichIterable;
 import com.gs.collections.api.block.function.Function;
@@ -52,14 +54,14 @@ public abstract class AbstractMutableCollection<T>
         return IterableIterate.selectAndRejectWith(this, predicate, parameter);
     }
 
-    public void removeIf(Predicate<? super T> predicate)
+    public boolean removeIf(Predicate<? super T> predicate)
     {
-        IterableIterate.removeIf(this, predicate);
+        return IterableIterate.removeIf(this, predicate);
     }
 
-    public <P> void removeIfWith(Predicate2<? super T, ? super P> predicate, P parameter)
+    public <P> boolean removeIfWith(Predicate2<? super T, ? super P> predicate, P parameter)
     {
-        IterableIterate.removeIfWith(this, predicate, parameter);
+        return IterableIterate.removeIfWith(this, predicate, parameter);
     }
 
     public <IV, P> IV injectIntoWith(
@@ -73,7 +75,20 @@ public abstract class AbstractMutableCollection<T>
     public boolean addAllIterable(Iterable<? extends T> iterable)
     {
         int oldSize = this.size();
-        Iterate.forEachWith(iterable, Procedures2.<T>addToCollection(), this);
+
+        if (iterable instanceof List && iterable instanceof RandomAccess)
+        {
+            List<T> list = (List<T>) iterable;
+            int size = list.size();
+            for (int i = 0; i < size; i++)
+            {
+                this.add(list.get(i));
+            }
+        }
+        else
+        {
+            Iterate.forEachWith(iterable, Procedures2.<T>addToCollection(), this);
+        }
         return oldSize != this.size();
     }
 

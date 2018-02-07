@@ -393,6 +393,14 @@ public class ObjectBooleanHashMap<K> implements MutableObjectBooleanMap<K>, Exte
 
     public void forEach(BooleanProcedure procedure)
     {
+        this.each(procedure);
+    }
+
+    /**
+     * @since 7.0.
+     */
+    public void each(BooleanProcedure procedure)
+    {
         this.forEachValue(procedure);
     }
 
@@ -591,16 +599,17 @@ public class ObjectBooleanHashMap<K> implements MutableObjectBooleanMap<K>, Exte
     public void removeKey(K key)
     {
         int index = this.probe(key);
-        if (ObjectBooleanHashMap.isNonSentinel(this.keys[index]) && ObjectBooleanHashMap.nullSafeEquals(this.toNonSentinel(this.keys[index]), key))
+        this.removeKeyAtIndex(key, index);
+    }
+
+    private void removeKeyAtIndex(K key, int index)
+    {
+        if (isNonSentinel(this.keys[index]) && nullSafeEquals(this.toNonSentinel(this.keys[index]), key))
         {
             this.keys[index] = REMOVED_KEY;
             this.values.set(index, EMPTY_VALUE);
             this.occupiedWithData--;
             this.occupiedWithSentinels++;
-            if (this.occupiedWithSentinels > this.maxOccupiedWithSentinels())
-            {
-                this.rehash();
-            }
         }
     }
 
@@ -619,10 +628,6 @@ public class ObjectBooleanHashMap<K> implements MutableObjectBooleanMap<K>, Exte
             this.values.set(index, EMPTY_VALUE);
             this.occupiedWithData--;
             this.occupiedWithSentinels++;
-            if (this.occupiedWithSentinels > this.maxOccupiedWithSentinels())
-            {
-                this.rehash();
-            }
 
             return oldValue;
         }
@@ -971,7 +976,7 @@ public class ObjectBooleanHashMap<K> implements MutableObjectBooleanMap<K>, Exte
         this.keys[index] = ObjectBooleanHashMap.toSentinelIfNull(key);
         this.values.set(index, value);
         ++this.occupiedWithData;
-        if (this.occupiedWithData > this.maxOccupiedWithData())
+        if (this.occupiedWithData + this.occupiedWithSentinels > this.maxOccupiedWithData())
         {
             this.rehashAndGrow();
         }
@@ -1021,11 +1026,6 @@ public class ObjectBooleanHashMap<K> implements MutableObjectBooleanMap<K>, Exte
     private static <K> boolean isNonSentinel(K key)
     {
         return key != null && !ObjectBooleanHashMap.isRemovedKey(key);
-    }
-
-    private void rehash()
-    {
-        this.rehash(this.keys.length);
     }
 
     private int maxOccupiedWithSentinels()
@@ -1166,7 +1166,7 @@ public class ObjectBooleanHashMap<K> implements MutableObjectBooleanMap<K>, Exte
                 K next = iterator.next();
                 if (!collection.contains(next))
                 {
-                    this.remove(next);
+                    iterator.remove();
                 }
             }
             return oldSize != ObjectBooleanHashMap.this.size();
@@ -1249,14 +1249,7 @@ public class ObjectBooleanHashMap<K> implements MutableObjectBooleanMap<K>, Exte
             if (ObjectBooleanHashMap.isNonSentinel(this.currentKey))
             {
                 int index = this.position - 1;
-                ObjectBooleanHashMap.this.keys[index] = REMOVED_KEY;
-                ObjectBooleanHashMap.this.values.set(index, EMPTY_VALUE);
-                ObjectBooleanHashMap.this.occupiedWithData--;
-                ObjectBooleanHashMap.this.occupiedWithSentinels++;
-                if (ObjectBooleanHashMap.this.occupiedWithSentinels > ObjectBooleanHashMap.this.maxOccupiedWithSentinels())
-                {
-                    ObjectBooleanHashMap.this.rehash();
-                }
+                ObjectBooleanHashMap.this.removeKeyAtIndex(ObjectBooleanHashMap.this.toNonSentinel(this.currentKey), index);
             }
             else
             {
@@ -1426,6 +1419,11 @@ public class ObjectBooleanHashMap<K> implements MutableObjectBooleanMap<K>, Exte
         }
 
         public void forEach(BooleanProcedure procedure)
+        {
+            this.each(procedure);
+        }
+
+        public void each(BooleanProcedure procedure)
         {
             ObjectBooleanHashMap.this.forEach(procedure);
         }

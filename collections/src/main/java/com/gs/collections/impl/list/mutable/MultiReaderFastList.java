@@ -26,6 +26,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Random;
 import java.util.RandomAccess;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -33,6 +34,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import com.gs.collections.api.LazyIterable;
 import com.gs.collections.api.RichIterable;
+import com.gs.collections.api.block.HashingStrategy;
 import com.gs.collections.api.block.function.Function;
 import com.gs.collections.api.block.function.Function2;
 import com.gs.collections.api.block.function.primitive.BooleanFunction;
@@ -72,6 +74,7 @@ import com.gs.collections.api.ordered.OrderedIterable;
 import com.gs.collections.api.partition.list.PartitionMutableList;
 import com.gs.collections.api.stack.MutableStack;
 import com.gs.collections.api.tuple.Pair;
+import com.gs.collections.impl.block.factory.HashingStrategies;
 import com.gs.collections.impl.collection.mutable.AbstractMultiReaderMutableCollection;
 import com.gs.collections.impl.factory.Lists;
 import com.gs.collections.impl.lazy.ReverseIterable;
@@ -528,6 +531,19 @@ public final class MultiReaderFastList<T>
         try
         {
             return this.delegate.distinct();
+        }
+        finally
+        {
+            this.unlockReadLock();
+        }
+    }
+
+    public MutableList<T> distinct(HashingStrategy<? super T> hashingStrategy)
+    {
+        this.acquireReadLock();
+        try
+        {
+            return this.delegate.distinct(hashingStrategy);
         }
         finally
         {
@@ -1203,6 +1219,11 @@ public final class MultiReaderFastList<T>
             return this.getDelegate().distinct();
         }
 
+        public MutableList<T> distinct(HashingStrategy<? super T> hashingStrategy)
+        {
+            return this.getDelegate().distinct(hashingStrategy);
+        }
+
         public <P> MutableList<T> rejectWith(
                 Predicate2<? super T, ? super P> predicate,
                 P parameter)
@@ -1263,6 +1284,18 @@ public final class MultiReaderFastList<T>
         public MutableList<T> reverseThis()
         {
             this.getDelegate().reverseThis();
+            return this;
+        }
+
+        public MutableList<T> shuffleThis()
+        {
+            this.getDelegate().shuffleThis();
+            return this;
+        }
+
+        public MutableList<T> shuffleThis(Random rnd)
+        {
+            this.getDelegate().shuffleThis(rnd);
             return this;
         }
 
@@ -1640,6 +1673,34 @@ public final class MultiReaderFastList<T>
         try
         {
             this.delegate.reverseThis();
+            return this;
+        }
+        finally
+        {
+            this.unlockWriteLock();
+        }
+    }
+
+    public MutableList<T> shuffleThis()
+    {
+        this.acquireWriteLock();
+        try
+        {
+            this.delegate.shuffleThis();
+            return this;
+        }
+        finally
+        {
+            this.unlockWriteLock();
+        }
+    }
+
+    public MutableList<T> shuffleThis(Random rnd)
+    {
+        this.acquireWriteLock();
+        try
+        {
+            this.delegate.shuffleThis(rnd);
             return this;
         }
         finally

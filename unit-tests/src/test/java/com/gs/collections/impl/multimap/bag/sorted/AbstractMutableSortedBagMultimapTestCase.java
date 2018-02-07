@@ -40,6 +40,12 @@ import com.gs.collections.impl.utility.Iterate;
 import org.junit.Assert;
 import org.junit.Test;
 
+/**
+ * Test of {@link TreeBagMultimap}.
+ *
+ * @deprecated in 7.0
+ */
+@Deprecated
 public abstract class AbstractMutableSortedBagMultimapTestCase extends AbstractMutableMultimapTestCase
 {
     protected abstract <K, V> MutableSortedBagMultimap<K, V> newMultimap(Comparator<V> comparator);
@@ -110,13 +116,6 @@ public abstract class AbstractMutableSortedBagMultimapTestCase extends AbstractM
         Verify.assertEmpty(multimap);
     }
 
-    @Test(expected = UnsupportedOperationException.class)
-    @Override
-    public void toImmutable()
-    {
-        super.toImmutable();
-    }
-
     @Override
     @Test
     public void selectKeysValues()
@@ -161,7 +160,7 @@ public abstract class AbstractMutableSortedBagMultimapTestCase extends AbstractM
         expectedMultimap.putAll(2, FastList.newListWith(5, 4, 3, 2, 2));
         Assert.assertEquals(expectedMultimap, selectedMultimap);
         Verify.assertSortedBagsEqual(expectedMultimap.get(2), selectedMultimap.get(2));
-        Assert.assertEquals(expectedMultimap.comparator(), selectedMultimap.comparator());
+        Assert.assertSame(expectedMultimap.comparator(), selectedMultimap.comparator());
     }
 
     @Override

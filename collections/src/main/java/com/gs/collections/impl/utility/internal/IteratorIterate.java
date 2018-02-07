@@ -21,9 +21,11 @@ import java.math.BigInteger;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import com.gs.collections.api.RichIterable;
+import com.gs.collections.api.block.HashingStrategy;
 import com.gs.collections.api.block.function.Function;
 import com.gs.collections.api.block.function.Function0;
 import com.gs.collections.api.block.function.Function2;
@@ -63,9 +65,11 @@ import com.gs.collections.api.partition.list.PartitionMutableList;
 import com.gs.collections.api.tuple.Pair;
 import com.gs.collections.api.tuple.Twin;
 import com.gs.collections.impl.block.factory.Functions0;
+import com.gs.collections.impl.block.factory.HashingStrategies;
 import com.gs.collections.impl.block.procedure.MutatingAggregationProcedure;
 import com.gs.collections.impl.block.procedure.NonMutatingAggregationProcedure;
 import com.gs.collections.impl.factory.Lists;
+import com.gs.collections.impl.list.mutable.FastList;
 import com.gs.collections.impl.list.mutable.primitive.BooleanArrayList;
 import com.gs.collections.impl.list.mutable.primitive.ByteArrayList;
 import com.gs.collections.impl.list.mutable.primitive.CharArrayList;
@@ -78,6 +82,7 @@ import com.gs.collections.impl.map.mutable.UnifiedMap;
 import com.gs.collections.impl.multimap.list.FastListMultimap;
 import com.gs.collections.impl.partition.list.PartitionFastList;
 import com.gs.collections.impl.set.mutable.UnifiedSet;
+import com.gs.collections.impl.set.strategy.mutable.UnifiedSetWithHashingStrategy;
 import com.gs.collections.impl.tuple.Tuples;
 import com.gs.collections.impl.utility.Iterate;
 
@@ -876,37 +881,42 @@ public final class IteratorIterate
     /**
      * @see Iterate#removeIf(Iterable, Predicate)
      */
-    public static <T> Iterator<T> removeIf(Iterator<T> iterator, Predicate<? super T> predicate)
+    public static <T> boolean removeIf(Iterator<T> iterator, Predicate<? super T> predicate)
     {
+        boolean changed = false;
         while (iterator.hasNext())
         {
             T each = iterator.next();
             if (predicate.accept(each))
             {
                 iterator.remove();
+                changed = true;
             }
         }
-        return iterator;
+        return changed;
     }
 
     /**
      * @see Iterate#removeIfWith(Iterable, Predicate2, Object)
      */
-    public static <T, P> Iterator<T> removeIfWith(Iterator<T> iterator, Predicate2<? super T, ? super P> predicate, P parameter)
+    public static <T, P> boolean removeIfWith(Iterator<T> iterator, Predicate2<? super T, ? super P> predicate, P parameter)
     {
+        boolean changed = false;
         while (iterator.hasNext())
         {
             T each = iterator.next();
             if (predicate.accept(each, parameter))
             {
                 iterator.remove();
+                changed = true;
             }
         }
-        return iterator;
+        return changed;
     }
 
-    public static <T> Iterator<T> removeIf(Iterator<T> iterator, Predicate<? super T> predicate, Procedure<? super T> procedure)
+    public static <T> boolean removeIf(Iterator<T> iterator, Predicate<? super T> predicate, Procedure<? super T> procedure)
     {
+        boolean changed = false;
         while (iterator.hasNext())
         {
             T each = iterator.next();
@@ -914,9 +924,26 @@ public final class IteratorIterate
             {
                 procedure.value(each);
                 iterator.remove();
+                changed = true;
             }
         }
-        return iterator;
+        return changed;
+    }
+
+    public static <T, P> boolean removeIfWith(Iterator<T> iterator, Predicate2<? super T, ? super P> predicate, P parameter, Procedure<? super T> procedure)
+    {
+        boolean changed = false;
+        while (iterator.hasNext())
+        {
+            T each = iterator.next();
+            if (predicate.accept(each, parameter))
+            {
+                procedure.value(each);
+                iterator.remove();
+                changed = true;
+            }
+        }
+        return changed;
     }
 
     /**
@@ -1046,7 +1073,11 @@ public final class IteratorIterate
         return target;
     }
 
-    public static <T, R extends Collection<T>> R distinct(
+    /**
+     * @deprecated in 7.0.
+     */
+    @Deprecated
+    public static <T, R extends List<T>> R distinct(
             Iterator<T> iterator,
             R targetCollection)
     {
@@ -1060,6 +1091,32 @@ public final class IteratorIterate
             }
         }
         return targetCollection;
+    }
+
+    /**
+     * @since 7.0.
+     */
+    public static <T> MutableList<T> distinct(Iterator<T> iterator)
+    {
+        return IteratorIterate.distinct(iterator, FastList.<T>newList());
+    }
+
+    /**
+     * @since 7.0.
+     */
+    public static <T> MutableList<T> distinct(Iterator<T> iterator, HashingStrategy<? super T> hashingStrategy)
+    {
+        Set<T> seenSoFar = UnifiedSetWithHashingStrategy.newSet(hashingStrategy);
+        FastList<T> result = FastList.newList();
+        while (iterator.hasNext())
+        {
+            T item = iterator.next();
+            if (seenSoFar.add(item))
+            {
+                result.add(item);
+            }
+        }
+        return result;
     }
 
     /**

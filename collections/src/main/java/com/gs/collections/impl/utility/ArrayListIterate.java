@@ -18,12 +18,14 @@ package com.gs.collections.impl.utility;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
+import com.gs.collections.api.block.HashingStrategy;
 import com.gs.collections.api.block.function.Function;
 import com.gs.collections.api.block.function.Function0;
 import com.gs.collections.api.block.function.Function2;
@@ -85,6 +87,7 @@ import com.gs.collections.impl.map.mutable.UnifiedMap;
 import com.gs.collections.impl.multimap.list.FastListMultimap;
 import com.gs.collections.impl.partition.list.PartitionFastList;
 import com.gs.collections.impl.set.mutable.UnifiedSet;
+import com.gs.collections.impl.set.strategy.mutable.UnifiedSetWithHashingStrategy;
 import com.gs.collections.impl.tuple.Tuples;
 import com.gs.collections.impl.utility.internal.InternalArrayIterate;
 import com.gs.collections.impl.utility.internal.RandomAccessListIterate;
@@ -1417,8 +1420,9 @@ public final class ArrayListIterate
     /**
      * @see Iterate#removeIf(Iterable, Predicate)
      */
-    public static <T> ArrayList<T> removeIf(ArrayList<T> list, Predicate<? super T> predicate)
+    public static <T> boolean removeIf(ArrayList<T> list, Predicate<? super T> predicate)
     {
+        boolean changed;
         if (list.getClass() == ArrayList.class && ArrayListIterate.SIZE_FIELD != null)
         {
             int currentFilledIndex = 0;
@@ -1436,23 +1440,25 @@ public final class ArrayListIterate
                     currentFilledIndex++;
                 }
             }
+            changed = currentFilledIndex < size;
             ArrayListIterate.wipeAndResetTheEnd(currentFilledIndex, size, elements, list);
         }
         else
         {
-            RandomAccessListIterate.removeIf(list, predicate);
+            return RandomAccessListIterate.removeIf(list, predicate);
         }
-        return list;
+        return changed;
     }
 
     /**
      * @see Iterate#removeIfWith(Iterable, Predicate2, Object)
      */
-    public static <T, P> ArrayList<T> removeIfWith(
+    public static <T, P> boolean removeIfWith(
             ArrayList<T> list,
             Predicate2<? super T, ? super P> predicate,
             P parameter)
     {
+        boolean changed;
         if (list.getClass() == ArrayList.class && ArrayListIterate.SIZE_FIELD != null)
         {
             int currentFilledIndex = 0;
@@ -1470,13 +1476,14 @@ public final class ArrayListIterate
                     currentFilledIndex++;
                 }
             }
+            changed = currentFilledIndex < size;
             ArrayListIterate.wipeAndResetTheEnd(currentFilledIndex, size, elements, list);
         }
         else
         {
-            RandomAccessListIterate.removeIfWith(list, predicate, parameter);
+            return RandomAccessListIterate.removeIfWith(list, predicate, parameter);
         }
-        return list;
+        return changed;
     }
 
     public static <T> ArrayList<T> distinct(ArrayList<T> list)
@@ -1484,7 +1491,11 @@ public final class ArrayListIterate
         return ArrayListIterate.distinct(list, new ArrayList<T>());
     }
 
-    public static <T, R extends Collection<T>> R distinct(ArrayList<T> list, R targetCollection)
+    /**
+     * @deprecated in 7.0.
+     */
+    @Deprecated
+    public static <T, R extends List<T>> R distinct(ArrayList<T> list, R targetList)
     {
         int size = list.size();
         if (ArrayListIterate.isOptimizableArrayList(list, size))
@@ -1495,12 +1506,45 @@ public final class ArrayListIterate
             {
                 if (seenSoFar.add(elements[i]))
                 {
-                    targetCollection.add(elements[i]);
+                    targetList.add(elements[i]);
                 }
             }
-            return targetCollection;
+            return targetList;
         }
-        return RandomAccessListIterate.distinct(list, targetCollection);
+        return RandomAccessListIterate.distinct(list, targetList);
+    }
+
+    /**
+     * @since 7.0.
+     */
+    public static <T> ArrayList<T> distinct(ArrayList<T> list, HashingStrategy<? super T> hashingStrategy)
+    {
+        int size = list.size();
+        MutableSet<T> seenSoFar = UnifiedSetWithHashingStrategy.newSet(hashingStrategy);
+        ArrayList<T> result = new ArrayList<T>();
+        if (ArrayListIterate.isOptimizableArrayList(list, size))
+        {
+            T[] elements = ArrayListIterate.getInternalArray(list);
+            for (int i = 0; i < size; i++)
+            {
+                if (seenSoFar.add(elements[i]))
+                {
+                    result.add(elements[i]);
+                }
+            }
+        }
+        else
+        {
+            for (int i = 0; i < size; i++)
+            {
+                T item = list.get(i);
+                if (seenSoFar.add(item))
+                {
+                    result.add(item);
+                }
+            }
+        }
+        return result;
     }
 
     private static <T> void wipeAndResetTheEnd(
@@ -1541,7 +1585,7 @@ public final class ArrayListIterate
         int size = list.size();
         if (ArrayListIterate.canAccessInternalArray(list))
         {
-            ArrayIterate.sort(ArrayListIterate.getInternalArray(list), size, comparator);
+            Arrays.sort(ArrayListIterate.getInternalArray(list), 0, size, comparator);
         }
         else
         {

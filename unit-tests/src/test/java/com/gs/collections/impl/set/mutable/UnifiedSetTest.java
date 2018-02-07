@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Goldman Sachs.
+ * Copyright 2015 Goldman Sachs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package com.gs.collections.impl.set.mutable;
 
+import java.lang.reflect.Field;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.concurrent.Executors;
@@ -72,10 +73,13 @@ public class UnifiedSetTest extends AbstractMutableSetTestCase
         Verify.assertEqualsAndHashCode(UnifiedSet.newSetWith("A", "1", "2", "3", "4"), list);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void newSetWithNegativeInitialCapacity()
+    @Test
+    public void newSet_throws()
     {
-        new UnifiedSet<Integer>(-1, 0.5f);
+        Verify.assertThrows(IllegalArgumentException.class, () -> new UnifiedSet<Integer>(-1, 0.5f));
+        Verify.assertThrows(IllegalArgumentException.class, () -> new UnifiedSet<Integer>(1, -0.5f));
+        Verify.assertThrows(IllegalArgumentException.class, () -> new UnifiedSet<Integer>(1, 0.0f));
+        Verify.assertThrows(IllegalArgumentException.class, () -> new UnifiedSet<Integer>(1, 1.5f));
     }
 
     @Test
@@ -346,10 +350,56 @@ public class UnifiedSetTest extends AbstractMutableSetTestCase
         Verify.assertEqualsAndHashCode(set, UnifiedSet.newSet(set));
     }
 
-    @Test(expected = NullPointerException.class)
-    public void newSet_null()
+    @Test
+    public void newSet()
     {
-        UnifiedSet.newSet(null);
+        for (int i = 1; i < 17; i++)
+        {
+            this.assertPresizedSet(i, 0.75f);
+        }
+        this.assertPresizedSet(31, 0.75f);
+        this.assertPresizedSet(32, 0.75f);
+        this.assertPresizedSet(34, 0.75f);
+        this.assertPresizedSet(60, 0.75f);
+        this.assertPresizedSet(64, 0.70f);
+        this.assertPresizedSet(68, 0.70f);
+        this.assertPresizedSet(60, 0.70f);
+        this.assertPresizedSet(1025, 0.80f);
+        this.assertPresizedSet(1024, 0.80f);
+        this.assertPresizedSet(1025, 0.80f);
+        this.assertPresizedSet(1024, 0.805f);
+    }
+
+    private void assertPresizedSet(int initialCapacity, float loadFactor)
+    {
+        try
+        {
+            Field tableField = UnifiedSet.class.getDeclaredField("table");
+            tableField.setAccessible(true);
+
+            Object[] table = (Object[]) tableField.get(UnifiedSet.newSet(initialCapacity, loadFactor));
+
+            int size = (int) Math.ceil(initialCapacity / loadFactor);
+            int capacity = 1;
+            while (capacity < size)
+            {
+                capacity <<= 1;
+            }
+
+            Assert.assertEquals(capacity, table.length, 0.00);
+        }
+        catch (SecurityException ignored)
+        {
+            Assert.fail("Unable to modify the visibility of the table on UnifiedSet");
+        }
+        catch (NoSuchFieldException ignored)
+        {
+            Assert.fail("No field named table UnifiedSet");
+        }
+        catch (IllegalAccessException ignored)
+        {
+            Assert.fail("No access the field table in UnifiedSet");
+        }
     }
 
     @Test
