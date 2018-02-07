@@ -28,12 +28,13 @@ import org.openjdk.jmh.annotations.Param;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
+import scala.collection.mutable.AnyRefMap;
 import scala.collection.mutable.Map;
 
 @State(Scope.Thread)
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.SECONDS)
-public class ScalaMutableMapGetTest
+public class ScalaAnyRefMapGetTest
 {
     private static final int RANDOM_COUNT = 9;
 
@@ -43,7 +44,7 @@ public class ScalaMutableMapGetTest
             "9250000", "9500000", "9750000", "10000000"})
     public int size;
     private String[] elements;
-    private Map<String, String> scalaMap;
+    private Map<String, String> scalaAnyRefMap;
 
     @Setup
     public void setUp()
@@ -51,13 +52,13 @@ public class ScalaMutableMapGetTest
         Random random = new Random(123456789012345L);
 
         this.elements = new String[this.size];
-        this.scalaMap = new PresizableHashMap<>(this.size);
+        this.scalaAnyRefMap = new AnyRefMap<>(this.size);
 
         for (int i = 0; i < this.size; i++)
         {
             String element = RandomStringUtils.random(RANDOM_COUNT, 0, 0, false, true, null, random);
             this.elements[i] = element;
-            this.scalaMap.put(element, "dummy");
+            this.scalaAnyRefMap.put(element, "dummy");
         }
     }
 
@@ -66,11 +67,11 @@ public class ScalaMutableMapGetTest
     {
         int localSize = this.size;
         String[] localElements = this.elements;
-        Map<String, String> localScalaMap = this.scalaMap;
+        Map<String, String> localScalaAnyRefMap = this.scalaAnyRefMap;
 
         for (int i = 0; i < localSize; i++)
         {
-            if (!localScalaMap.get(localElements[i]).isDefined())
+            if (!localScalaAnyRefMap.get(localElements[i]).isDefined())
             {
                 throw new AssertionError(i);
             }

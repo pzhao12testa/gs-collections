@@ -150,11 +150,6 @@
                 value="java.lang.Boolean,java.lang.Integer,java.lang.Long,java.lang.Short,java.lang.Character,java.lang.Byte,java.util.Timer,java.util.TimerTask" />
         </module>
 
-        <module name="RedundantThrows">
-            <property name="logLoadErrors" value="true" />
-            <property name="suppressLoadErrors" value="true" />
-        </module>
-
         <module name="SimplifyBooleanExpression" />
 
         <module name="SimplifyBooleanReturn" />
@@ -289,17 +284,17 @@
 
     <module name="RegexpMultiline">
         <property name="format" value="\r\r[ ]*\}" />
-        <property name="message" value="Last line before closing a scope bay not be blank." />
+        <property name="message" value="Last line before closing a scope may not be blank." />
     </module>
 
     <module name="RegexpMultiline">
         <property name="format" value="\n\n[ ]*\}" />
-        <property name="message" value="Last line before closing a scope bay not be blank." />
+        <property name="message" value="Last line before closing a scope may not be blank." />
     </module>
 
     <module name="RegexpMultiline">
         <property name="format" value="\r\n\r\n[ ]*\}" />
-        <property name="message" value="Last line before closing a scope bay not be blank." />
+        <property name="message" value="Last line before closing a scope may not be blank." />
     </module>
 
 </module>

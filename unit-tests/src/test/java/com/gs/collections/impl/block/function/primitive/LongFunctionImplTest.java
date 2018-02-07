@@ -14,17 +14,28 @@
  * limitations under the License.
  */
 
-package com.gs.collections.impl.jmh.map
+package com.gs.collections.impl.block.function.primitive;
 
-class PresizableHashMap[K, V](val _initialSize: Int) extends scala.collection.mutable.HashMap[K, V]
+import org.junit.Assert;
+import org.junit.Test;
+
+/**
+ * Junit test for {@link LongFunctionImpl}.
+ */
+public class LongFunctionImplTest
 {
-    private def initialCapacity =
-        if (_initialSize == 0) 1
-        else smallestPowerOfTwoGreaterThan((_initialSize.toLong * 1000 / _loadFactor).asInstanceOf[Int])
+    @Test
+    public void valueOf()
+    {
+        LongFunctionImpl<Long> longFunction = new LongFunctionImpl<Long>()
+        {
+            public long longValueOf(Long each)
+            {
+                return each.longValue();
+            }
+        };
 
-    private def smallestPowerOfTwoGreaterThan(n: Int): Int =
-        if (n > 1) Integer.highestOneBit(n - 1) << 1 else 1
-
-    table = new Array(initialCapacity)
-    threshold = ((initialCapacity.toLong * _loadFactor) / 1000).toInt
+        Assert.assertEquals(1L, longFunction.longValueOf(1L));
+        Assert.assertEquals(1L, longFunction.valueOf(1L).longValue());
+    }
 }

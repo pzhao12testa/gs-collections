@@ -28,12 +28,13 @@ import org.openjdk.jmh.annotations.Param;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
+import scala.collection.mutable.AnyRefMap;
 import scala.collection.mutable.Map;
 
 @State(Scope.Thread)
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.SECONDS)
-public class ScalaMutableMapGetTest
+public class ScalaAnyRefMapPutTest
 {
     private static final int RANDOM_COUNT = 9;
 
@@ -42,8 +43,11 @@ public class ScalaMutableMapGetTest
             "6250000", "6500000", "6750000", "7000000", "7250000", "7500000", "7750000", "8000000", "8250000", "8500000", "8750000", "9000000",
             "9250000", "9500000", "9750000", "10000000"})
     public int size;
+    @Param({"true", "false"})
+    public boolean isPresized;
+    @Param("0.75")
+    public float loadFactor; //Adding a loadFactor for only ease of data plots
     private String[] elements;
-    private Map<String, String> scalaMap;
 
     @Setup
     public void setUp()
@@ -51,29 +55,25 @@ public class ScalaMutableMapGetTest
         Random random = new Random(123456789012345L);
 
         this.elements = new String[this.size];
-        this.scalaMap = new PresizableHashMap<>(this.size);
 
         for (int i = 0; i < this.size; i++)
         {
-            String element = RandomStringUtils.random(RANDOM_COUNT, 0, 0, false, true, null, random);
-            this.elements[i] = element;
-            this.scalaMap.put(element, "dummy");
+            this.elements[i] = RandomStringUtils.random(RANDOM_COUNT, 0, 0, false, true, null, random);
         }
     }
 
     @Benchmark
-    public void get()
+    public Map<String, String> scalaAnyRef()
     {
         int localSize = this.size;
         String[] localElements = this.elements;
-        Map<String, String> localScalaMap = this.scalaMap;
+
+        Map<String, String> scalaAnyRefMap = this.isPresized ? new AnyRefMap<>(localSize) : new AnyRefMap<>();
 
         for (int i = 0; i < localSize; i++)
         {
-            if (!localScalaMap.get(localElements[i]).isDefined())
-            {
-                throw new AssertionError(i);
-            }
+            scalaAnyRefMap.put(localElements[i], "dummy");
         }
+        return scalaAnyRefMap;
     }
 }

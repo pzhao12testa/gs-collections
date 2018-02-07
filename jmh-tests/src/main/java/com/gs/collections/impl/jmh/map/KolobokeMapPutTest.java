@@ -69,6 +69,7 @@ public class KolobokeMapPutTest
         String[] localElements = this.elements;
 
         ObjObjMap<String, String> koloboke = this.isPresized ? HashObjObjMaps.newMutableMap(localSize) : HashObjObjMaps.newMutableMap();
+
         for (int i = 0; i < localSize; i++)
         {
             koloboke.put(localElements[i], "dummy");
