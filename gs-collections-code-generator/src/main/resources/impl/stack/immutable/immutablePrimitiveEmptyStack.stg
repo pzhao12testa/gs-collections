@@ -66,13 +66,6 @@ final class Immutable<name>EmptyStack implements Immutable<name>Stack, Serializa
     {
     }
 
-    /**
-     * @since 7.0.
-     */
-    public void each(<name>Procedure procedure)
-    {
-    }
-
     public int count(<name>Predicate predicate)
     {
         return 0;

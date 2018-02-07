@@ -500,14 +500,6 @@ public final class <name>HashSet extends Abstract<name>Set implements Mutable<na
 
     public void forEach(<name>Procedure procedure)
     {
-        this.each(procedure);
-    }
-
-    /**
-     * @since 7.0.
-     */
-    public void each(<name>Procedure procedure)
-    {
         int zeroToThirtyOne = this.zeroToThirtyOne;
         while (zeroToThirtyOne != 0)
         {
@@ -734,7 +726,28 @@ public final class <name>HashSet extends Abstract<name>Set implements Mutable<na
         return true;
     }
 
-    <(sumMethod.(type))()>
+    public <wideType.(type)> sum()
+    {
+        <wideType.(type)> result = <wideZero.(type)>;
+
+        int zeroToThirtyOne = this.zeroToThirtyOne;
+        while (zeroToThirtyOne != 0)
+        {
+            <type> value = <(castFromInt.(type))("Integer.numberOfTrailingZeros(zeroToThirtyOne)")>;
+            result += value;
+            zeroToThirtyOne &= ~(1 \<\< <(castRealTypeToInt.(type))("value")>);
+        }
+
+        for (<type> value : this.table)
+        {
+            if (isNonSentinel(value))
+            {
+                result += value;
+            }
+        }
+        return result;
+    }
+
     public <type> max()
     {
         if (this.isEmpty())
@@ -1137,11 +1150,6 @@ public final class <name>HashSet extends Abstract<name>Set implements Mutable<na
 
         public void forEach(<name>Procedure procedure)
         {
-            this.each(procedure);
-        }
-
-        public void each(<name>Procedure procedure)
-        {
             int zeroToThirtyOne = this.zeroToThirtyOne;
             while (zeroToThirtyOne != 0)
             {
@@ -1368,7 +1376,28 @@ public final class <name>HashSet extends Abstract<name>Set implements Mutable<na
             return true;
         }
 
-        <(sumMethod.(type))()>
+        public <wideType.(type)> sum()
+        {
+            <wideType.(type)> result = <wideZero.(type)>;
+
+            int zeroToThirtyOne = this.zeroToThirtyOne;
+            while (zeroToThirtyOne != 0)
+            {
+                <type> value = <(castFromInt.(type))("Integer.numberOfTrailingZeros(zeroToThirtyOne)")>;
+                result += value;
+                zeroToThirtyOne &= ~(1 \<\< <(castRealTypeToInt.(type))("value")>);
+            }
+
+            for (<type> value : this.table)
+            {
+                if (isNonSentinel(value))
+                {
+                    result += value;
+                }
+            }
+            return result;
+        }
+
         public <type> max()
         {
             if (this.isEmpty())
@@ -1653,67 +1682,4 @@ value >= <zero.(type)> && value \<= <(literal.(type))("31")>
 
 floatBetweenZeroAndThirtyOne(value) ::= <<
 <(greaterThanOrEquals.(type))("value", {<zero.(type)>})> && <(lessThanOrEquals.(type))("value", {<(literal.(type))("31")>})> && Double.compare(value, Math.floor(value)) == 0
->>
-
-sumMethod ::= [
-    "float": "kahanSum",
-    "double": "kahanSum",
-    "default": "sum"
-]
-
-sum() ::= <<
-public <wideType.(type)> sum()
-{
-    <wideType.(type)> result = <wideZero.(type)>;
-
-    int zeroToThirtyOne = this.zeroToThirtyOne;
-    while (zeroToThirtyOne != 0)
-    {
-        <type> value = <(castFromInt.(type))("Integer.numberOfTrailingZeros(zeroToThirtyOne)")>;
-        result += value;
-        zeroToThirtyOne &= ~(1 \<\< <(castRealTypeToInt.(type))("value")>);
-    }
-
-    for (<type> value : this.table)
-    {
-        if (isNonSentinel(value))
-        {
-            result += value;
-        }
-    }
-    return result;
-}
-
->>
-
-kahanSum() ::= <<
-public <wideType.(type)> sum()
-{
-    <wideType.(type)> result = <wideZero.(type)>;
-    <wideType.(type)> compensation = <wideZero.(type)>;
-
-    int zeroToThirtyOne = this.zeroToThirtyOne;
-    while (zeroToThirtyOne != 0)
-    {
-        <type> value = <(castFromInt.(type))("Integer.numberOfTrailingZeros(zeroToThirtyOne)")>;
-        <wideType.(type)> adjustedValue = value - compensation;
-        <wideType.(type)> nextSum = result + adjustedValue;
-        compensation = nextSum - result - adjustedValue;
-        result = nextSum;
-        zeroToThirtyOne &= ~(1 \<\< <(castRealTypeToInt.(type))("value")>);
-    }
-
-    for (<type> value : this.table)
-    {
-        if (isNonSentinel(value))
-        {
-            <wideType.(type)> adjustedValue = value - compensation;
-            <wideType.(type)> nextSum = result + adjustedValue;
-            compensation = nextSum - result - adjustedValue;
-            result = nextSum;
-        }
-    }
-    return result;
-}
-
 >>

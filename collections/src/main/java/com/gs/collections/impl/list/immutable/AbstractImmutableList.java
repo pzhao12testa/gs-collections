@@ -26,7 +26,6 @@ import java.util.ListIterator;
 import java.util.RandomAccess;
 import java.util.concurrent.ExecutorService;
 
-import com.gs.collections.api.block.HashingStrategy;
 import com.gs.collections.api.block.function.Function;
 import com.gs.collections.api.block.function.Function2;
 import com.gs.collections.api.block.function.primitive.BooleanFunction;
@@ -66,7 +65,6 @@ import com.gs.collections.api.stack.MutableStack;
 import com.gs.collections.api.tuple.Pair;
 import com.gs.collections.impl.block.factory.Comparators;
 import com.gs.collections.impl.block.factory.Functions;
-import com.gs.collections.impl.block.factory.HashingStrategies;
 import com.gs.collections.impl.block.procedure.CollectIfProcedure;
 import com.gs.collections.impl.block.procedure.CollectProcedure;
 import com.gs.collections.impl.block.procedure.FlatCollectProcedure;
@@ -653,12 +651,9 @@ abstract class AbstractImmutableList<T>
 
     public ImmutableList<T> distinct()
     {
-        return ListIterate.distinct(this.castToList()).toImmutable();
-    }
-
-    public ImmutableList<T> distinct(HashingStrategy<? super T> hashingStrategy)
-    {
-        return ListIterate.distinct(this.castToList(), hashingStrategy).toImmutable();
+        MutableList<T> result = Lists.mutable.empty();
+        ListIterate.distinct(this.castToList(), result);
+        return result.toImmutable();
     }
 
     @Override

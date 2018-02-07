@@ -524,7 +524,7 @@ public class TreeSortedSet<T> extends AbstractMutableCollection<T>
 
     public MutableSortedSet<T> distinct()
     {
-        return this.clone();
+        return TreeSortedSet.newSet(this);
     }
 
     public <S> boolean corresponds(OrderedIterable<S> other, Predicate2<? super T, ? super S> predicate)
@@ -699,36 +699,6 @@ public class TreeSortedSet<T> extends AbstractMutableCollection<T>
     public int size()
     {
         return this.treeSet.size();
-    }
-
-    public MutableSortedSet<T> toReversed()
-    {
-        throw new UnsupportedOperationException(this.getClass().getSimpleName() + ".toReversed() not implemented yet");
-    }
-
-    public MutableSortedSet<T> take(int count)
-    {
-        return IterableIterate.take(this, Math.min(this.size(), count), this.newEmpty());
-    }
-
-    public MutableSortedSet<T> drop(int count)
-    {
-        return IterableIterate.drop(this, count, this.newEmpty());
-    }
-
-    public void reverseForEach(Procedure<? super T> procedure)
-    {
-        throw new UnsupportedOperationException(this.getClass().getSimpleName() + ".reverseForEach() not implemented yet");
-    }
-
-    public LazyIterable<T> asReversed()
-    {
-        throw new UnsupportedOperationException(this.getClass().getSimpleName() + ".asReversed() not implemented yet");
-    }
-
-    public int detectLastIndex(Predicate<? super T> predicate)
-    {
-        throw new UnsupportedOperationException(this.getClass().getSimpleName() + ".detectLastIndex() not implemented yet");
     }
 
     public void writeExternal(final ObjectOutput out) throws IOException

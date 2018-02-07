@@ -21,23 +21,18 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import com.gs.collections.api.block.predicate.Predicate;
 import com.gs.collections.api.block.procedure.Procedure2;
 import com.gs.collections.api.collection.MutableCollection;
-import com.gs.collections.api.list.MutableList;
 import com.gs.collections.api.map.sorted.MutableSortedMap;
-import com.gs.collections.api.partition.list.PartitionMutableList;
 import com.gs.collections.api.set.MutableSet;
 import com.gs.collections.api.tuple.Pair;
 import com.gs.collections.impl.block.factory.Functions;
 import com.gs.collections.impl.block.procedure.MapCollectProcedure;
 import com.gs.collections.impl.collection.mutable.CollectionAdapter;
-import com.gs.collections.impl.factory.SortedMaps;
 import com.gs.collections.impl.set.mutable.SetAdapter;
 import com.gs.collections.impl.utility.ArrayIterate;
 import com.gs.collections.impl.utility.MapIterate;
@@ -319,80 +314,6 @@ public class TreeSortedMap<K, V>
     public boolean containsValue(Object value)
     {
         return this.treeMap.containsValue(value);
-    }
-
-    public MutableSortedMap<K, V> toReversed()
-    {
-        throw new UnsupportedOperationException(this.getClass().getSimpleName() + ".toReversed() not implemented yet");
-    }
-
-    public MutableSortedMap<K, V> take(int count)
-    {
-        if (count < 0)
-        {
-            throw new IllegalArgumentException("Count must be greater than zero, but was: " + count);
-        }
-
-        MutableSortedMap<K, V> output = this.newEmpty();
-        Iterator<Entry<K, V>> iterator = this.treeMap.entrySet().iterator();
-        int countCopy = count;
-        while (iterator.hasNext() && countCopy-- > 0)
-        {
-            Entry<K, V> next = iterator.next();
-            output.put(next.getKey(), next.getValue());
-        }
-        return output;
-    }
-
-    public MutableSortedMap<K, V> takeWhile(Predicate<? super V> predicate)
-    {
-        throw new UnsupportedOperationException(this.getClass().getSimpleName() + ".takeWhile() not implemented yet");
-    }
-
-    public MutableSortedMap<K, V> drop(int count)
-    {
-        if (count < 0)
-        {
-            throw new IllegalArgumentException("Count must be greater than zero, but was: " + count);
-        }
-
-        MutableSortedMap<K, V> output = SortedMaps.mutable.of(this.comparator());
-        Iterator<Entry<K, V>> iterator = this.treeMap.entrySet().iterator();
-        int start = Math.min(count, this.size());
-        if (start == this.size())
-        {
-            return output;
-        }
-        int i = 0;
-        while (iterator.hasNext())
-        {
-            if (i >= start)
-            {
-                Entry<K, V> next = iterator.next();
-                output.put(next.getKey(), next.getValue());
-            }
-            else
-            {
-                iterator.next();
-            }
-            i++;
-        }
-        return output;
-    }
-
-    public MutableSortedMap<K, V> dropWhile(Predicate<? super V> predicate)
-    {
-        throw new UnsupportedOperationException(this.getClass().getSimpleName() + ".dropWhile() not implemented yet");
-    }
-
-    public PartitionMutableList<V> partitionWhile(Predicate<? super V> predicate)
-    {
-        throw new UnsupportedOperationException(this.getClass().getSimpleName() + ".partitionWhile() not implemented yet");
-    }
-
-    public MutableList<V> distinct()
-    {
-        throw new UnsupportedOperationException(this.getClass().getSimpleName() + ".distinct() not implemented yet");
     }
 
     @Override

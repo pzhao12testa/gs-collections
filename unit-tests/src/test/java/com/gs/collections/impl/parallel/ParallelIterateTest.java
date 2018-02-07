@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Goldman Sachs.
+ * Copyright 2014 Goldman Sachs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -193,22 +193,22 @@ public class ParallelIterateTest
     public void testForEach()
     {
         IntegerSum sum1 = new IntegerSum(0);
-        List<Integer> list1 = ParallelIterateTest.createIntegerList(16);
+        List<Integer> list1 = createIntegerList(16);
         ParallelIterate.forEach(list1, new SumProcedure(sum1), new SumCombiner(sum1), 1, list1.size() / 2);
         Assert.assertEquals(16, sum1.getSum());
 
         IntegerSum sum2 = new IntegerSum(0);
-        List<Integer> list2 = ParallelIterateTest.createIntegerList(7);
+        List<Integer> list2 = createIntegerList(7);
         ParallelIterate.forEach(list2, new SumProcedure(sum2), new SumCombiner(sum2));
         Assert.assertEquals(7, sum2.getSum());
 
         IntegerSum sum3 = new IntegerSum(0);
-        List<Integer> list3 = ParallelIterateTest.createIntegerList(15);
+        List<Integer> list3 = createIntegerList(15);
         ParallelIterate.forEach(list3, new SumProcedure(sum3), new SumCombiner(sum3), 1, list3.size() / 2);
         Assert.assertEquals(15, sum3.getSum());
 
         IntegerSum sum4 = new IntegerSum(0);
-        List<Integer> list4 = ParallelIterateTest.createIntegerList(35);
+        List<Integer> list4 = createIntegerList(35);
         ParallelIterate.forEach(list4, new SumProcedure(sum4), new SumCombiner(sum4));
         Assert.assertEquals(35, sum4.getSum());
 
@@ -218,7 +218,7 @@ public class ParallelIterateTest
         Assert.assertEquals(35, sum5.getSum());
 
         IntegerSum sum6 = new IntegerSum(0);
-        List<Integer> list6 = ParallelIterateTest.createIntegerList(40);
+        List<Integer> list6 = createIntegerList(40);
         ParallelIterate.forEach(list6, new SumProcedure(sum6), new SumCombiner(sum6), 1, list6.size() / 2);
         Assert.assertEquals(40, sum6.getSum());
 
@@ -232,22 +232,22 @@ public class ParallelIterateTest
     public void testForEachImmutable()
     {
         IntegerSum sum1 = new IntegerSum(0);
-        ImmutableList<Integer> list1 = Lists.immutable.ofAll(ParallelIterateTest.createIntegerList(16));
+        ImmutableList<Integer> list1 = Lists.immutable.ofAll(createIntegerList(16));
         ParallelIterate.forEach(list1, new SumProcedure(sum1), new SumCombiner(sum1), 1, list1.size() / 2);
         Assert.assertEquals(16, sum1.getSum());
 
         IntegerSum sum2 = new IntegerSum(0);
-        ImmutableList<Integer> list2 = Lists.immutable.ofAll(ParallelIterateTest.createIntegerList(7));
+        ImmutableList<Integer> list2 = Lists.immutable.ofAll(createIntegerList(7));
         ParallelIterate.forEach(list2, new SumProcedure(sum2), new SumCombiner(sum2));
         Assert.assertEquals(7, sum2.getSum());
 
         IntegerSum sum3 = new IntegerSum(0);
-        ImmutableList<Integer> list3 = Lists.immutable.ofAll(ParallelIterateTest.createIntegerList(15));
+        ImmutableList<Integer> list3 = Lists.immutable.ofAll(createIntegerList(15));
         ParallelIterate.forEach(list3, new SumProcedure(sum3), new SumCombiner(sum3), 1, list3.size() / 2);
         Assert.assertEquals(15, sum3.getSum());
 
         IntegerSum sum4 = new IntegerSum(0);
-        ImmutableList<Integer> list4 = Lists.immutable.ofAll(ParallelIterateTest.createIntegerList(35));
+        ImmutableList<Integer> list4 = Lists.immutable.ofAll(createIntegerList(35));
         ParallelIterate.forEach(list4, new SumProcedure(sum4), new SumCombiner(sum4));
         Assert.assertEquals(35, sum4.getSum());
 
@@ -257,7 +257,7 @@ public class ParallelIterateTest
         Assert.assertEquals(35, sum5.getSum());
 
         IntegerSum sum6 = new IntegerSum(0);
-        ImmutableList<Integer> list6 = Lists.immutable.ofAll(ParallelIterateTest.createIntegerList(40));
+        ImmutableList<Integer> list6 = Lists.immutable.ofAll(createIntegerList(40));
         ParallelIterate.forEach(list6, new SumProcedure(sum6), new SumCombiner(sum6), 1, list6.size() / 2);
         Assert.assertEquals(40, sum6.getSum());
 
@@ -273,7 +273,7 @@ public class ParallelIterateTest
         Verify.assertThrows(
                 RuntimeException.class,
                 () -> ParallelIterate.forEach(
-                        ParallelIterateTest.createIntegerList(5),
+                        createIntegerList(5),
                         new PassThruProcedureFactory<>(EXCEPTION_PROCEDURE),
                         new PassThruCombiner<>(),
                         1,
@@ -336,7 +336,7 @@ public class ParallelIterateTest
         Verify.assertThrows(
                 RuntimeException.class,
                 () -> ParallelIterate.forEachWithIndex(
-                        ParallelIterateTest.createIntegerList(5),
+                        createIntegerList(5),
                         new PassThruObjectIntProcedureFactory<>(EXCEPTION_OBJECT_INT_PROCEDURE),
                         new PassThruCombiner<>(),
                         1,
@@ -522,8 +522,8 @@ public class ParallelIterateTest
         MutableList<Integer> list = LazyIterate.adapt(Collections.nCopies(100, 1))
                 .concatenate(Collections.nCopies(200, 2))
                 .concatenate(Collections.nCopies(300, 3))
-                .toList()
-                .shuffleThis();
+                .toList();
+        Collections.shuffle(list);
         MapIterable<String, AtomicInteger> aggregation =
                 ParallelIterate.aggregateInPlaceBy(list, String::valueOf, AtomicInteger::new, AtomicInteger::addAndGet, 50);
         Assert.assertEquals(100, aggregation.get("1").intValue());
@@ -568,32 +568,6 @@ public class ParallelIterateTest
     }
 
     @Test
-    public void sumByDoubleConsistentRounding()
-    {
-        MutableList<Integer> group1 = Interval.oneTo(100_000).toList().shuffleThis();
-        MutableList<Integer> group2 = Interval.fromTo(100_001, 200_000).toList().shuffleThis();
-        MutableList<Integer> integers = Lists.mutable.withAll(group1);
-        integers.addAll(group2);
-        ObjectDoubleMap<Integer> result = ParallelIterate.<Integer, Integer>sumByDouble(
-                integers,
-                integer -> integer > 100_000 ? 2 : 1,
-                integer -> {
-                    Integer i = integer > 100_000 ? integer - 100_000 : integer;
-                    return 1.0d / (i.doubleValue() * i.doubleValue() * i.doubleValue() * i.doubleValue());
-                });
-
-        Assert.assertEquals(
-                1.082323233711138,
-                result.get(1),
-                1.0e-15);
-
-        Assert.assertEquals(
-                1.082323233711138,
-                result.get(2),
-                1.0e-15);
-    }
-
-    @Test
     public void sumByFloat()
     {
         Interval interval = Interval.oneTo(100000);
@@ -613,34 +587,6 @@ public class ParallelIterateTest
         ObjectDoubleMap<String> smallSumByCount = ParallelIterate.sumByFloat(small, EVEN_OR_ODD, i -> 1.0f);
         Assert.assertEquals(5.0, smallSumByCount.get("Even"), 0.0);
         Assert.assertEquals(6.0, smallSumByCount.get("Odd"), 0.0);
-    }
-
-    @Test
-    public void sumByFloatConsistentRounding()
-    {
-        MutableList<Integer> group1 = Interval.oneTo(100_000).toList().shuffleThis();
-        MutableList<Integer> group2 = Interval.fromTo(100_001, 200_000).toList().shuffleThis();
-        MutableList<Integer> integers = Lists.mutable.withAll(group1);
-        integers.addAll(group2);
-        ObjectDoubleMap<Integer> result = ParallelIterate.<Integer, Integer>sumByFloat(
-                integers,
-                integer -> integer > 100_000 ? 2 : 1,
-                integer -> {
-                    Integer i = integer > 100_000 ? integer - 100_000 : integer;
-                    return 1.0f / (i.floatValue() * i.floatValue() * i.floatValue() * i.floatValue());
-                });
-
-        // The test only ensures the consistency/stability of rounding. This is not meant to test the "correctness" of the float calculation result.
-        // Indeed the lower bits of this calculation result are always incorrect due to the information loss of original float values.
-        Assert.assertEquals(
-                1.082323233761663,
-                result.get(1),
-                1.0e-15);
-
-        Assert.assertEquals(
-                1.082323233761663,
-                result.get(2),
-                1.0e-15);
     }
 
     @Test
@@ -690,7 +636,8 @@ public class ParallelIterateTest
     @Test
     public void sumByBigDecimal()
     {
-        MutableList<BigDecimal> list = Interval.oneTo(100000).collect(BigDecimal::new).toList().shuffleThis();
+        MutableList<BigDecimal> list = Interval.oneTo(100000).collect(BigDecimal::new).toList();
+        Collections.shuffle(list);
         MutableMap<String, BigDecimal> sumByCount = ParallelIterate.sumByBigDecimal(list, EVEN_OR_ODD_BD, bd -> new BigDecimal(1L));
         Assert.assertEquals(BigDecimal.valueOf(50000L), sumByCount.get("Even"));
         Assert.assertEquals(BigDecimal.valueOf(50000L), sumByCount.get("Odd"));
@@ -712,7 +659,8 @@ public class ParallelIterateTest
     @Test
     public void sumByBigInteger()
     {
-        MutableList<BigInteger> list = Interval.oneTo(100000).collect(Object::toString).collect(BigInteger::new).toList().shuffleThis();
+        MutableList<BigInteger> list = Interval.oneTo(100000).collect(Object::toString).collect(BigInteger::new).toList();
+        Collections.shuffle(list);
         MutableMap<String, BigInteger> sumByCount = ParallelIterate.sumByBigInteger(list, EVEN_OR_ODD_BI, bi -> BigInteger.valueOf(1L));
         Assert.assertEquals(BigInteger.valueOf(50000L), sumByCount.get("Even"));
         Assert.assertEquals(BigInteger.valueOf(50000L), sumByCount.get("Odd"));
@@ -738,8 +686,8 @@ public class ParallelIterateTest
         MutableList<Integer> list = LazyIterate.adapt(Collections.nCopies(1000, 1))
                 .concatenate(Collections.nCopies(2000, 2))
                 .concatenate(Collections.nCopies(3000, 3))
-                .toList()
-                .shuffleThis();
+                .toList();
+        Collections.shuffle(list);
         MapIterable<String, Integer> aggregation =
                 ParallelIterate.aggregateBy(list, String::valueOf, () -> 0, sumAggregator, 100);
         Assert.assertEquals(1000, aggregation.get("1").intValue());
@@ -773,7 +721,7 @@ public class ParallelIterateTest
 
     public static final class IntegerSum
     {
-        private int sum;
+        private int sum = 0;
 
         public IntegerSum(int newSum)
         {

@@ -43,6 +43,8 @@
     <module name="TreeWalker">
         <property name="tabWidth" value="4" />
 
+        <property name="cacheFile" value="build/checkstyleCache" />
+
         <!-- Checks for Naming Conventions.                  -->
         <!-- See http://checkstyle.sf.net/config_naming.html -->
 
@@ -146,6 +148,11 @@
             <property
                 name="classes"
                 value="java.lang.Boolean,java.lang.Integer,java.lang.Long,java.lang.Short,java.lang.Character,java.lang.Byte,java.util.Timer,java.util.TimerTask" />
+        </module>
+
+        <module name="RedundantThrows">
+            <property name="logLoadErrors" value="true" />
+            <property name="suppressLoadErrors" value="true" />
         </module>
 
         <module name="SimplifyBooleanExpression" />
@@ -253,8 +260,7 @@
 
         <module name="NoLineWrap" />
 
-        <!-- Comment until the check handles lambda expression with throw statement. -->
-        <!-- <module name="OneStatementPerLine" /> -->
+        <module name="OneStatementPerLine" />
 
     </module>
 
@@ -283,17 +289,17 @@
 
     <module name="RegexpMultiline">
         <property name="format" value="\r\r[ ]*\}" />
-        <property name="message" value="Last line before closing a scope may not be blank." />
+        <property name="message" value="Last line before closing a scope bay not be blank." />
     </module>
 
     <module name="RegexpMultiline">
         <property name="format" value="\n\n[ ]*\}" />
-        <property name="message" value="Last line before closing a scope may not be blank." />
+        <property name="message" value="Last line before closing a scope bay not be blank." />
     </module>
 
     <module name="RegexpMultiline">
         <property name="format" value="\r\n\r\n[ ]*\}" />
-        <property name="message" value="Last line before closing a scope may not be blank." />
+        <property name="message" value="Last line before closing a scope bay not be blank." />
     </module>
 
 </module>

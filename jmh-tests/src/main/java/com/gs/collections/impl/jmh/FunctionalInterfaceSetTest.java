@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Goldman Sachs.
+ * Copyright 2014 Goldman Sachs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,6 @@ import java.util.stream.Collectors;
 import com.gs.collections.api.bag.MutableBag;
 import com.gs.collections.api.set.MutableSet;
 import com.gs.collections.impl.bag.mutable.HashBag;
-import com.gs.collections.impl.jmh.runner.AbstractJMHTestRunner;
 import com.gs.collections.impl.list.Interval;
 import com.gs.collections.impl.list.mutable.FastList;
 import com.gs.collections.impl.parallel.ParallelIterate;
@@ -57,7 +56,7 @@ import org.openjdk.jmh.annotations.Warmup;
 @State(Scope.Thread)
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.SECONDS)
-public class FunctionalInterfaceSetTest extends AbstractJMHTestRunner
+public class FunctionalInterfaceSetTest
 {
     private static final int SIZE = 1_000_000;
     private static final int BATCH_SIZE = 10_000;

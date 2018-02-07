@@ -58,7 +58,6 @@ public final class StringFunctionsTest
         Function<String, Integer> function = StringFunctions.length();
         Assert.assertEquals(Integer.valueOf(6), function.valueOf("string"));
         Assert.assertEquals(Integer.valueOf(0), function.valueOf(""));
-        Assert.assertEquals("string.length()", function.toString());
     }
 
     @Test
@@ -70,7 +69,6 @@ public final class StringFunctionsTest
         Assert.assertEquals("trim", function.valueOf("  trim  "));
         Assert.assertEquals("trim", function.valueOf("trim"));
         Assert.assertSame("trim", function.valueOf("trim"));
-        Assert.assertEquals("string.trim()", function.toString());
     }
 
     @Test
@@ -85,19 +83,7 @@ public final class StringFunctionsTest
     @Test
     public void subString()
     {
-        Function<String, String> function1 = StringFunctions.subString(2, 5);
-        String testString = "habits";
-        Assert.assertEquals("bit", function1.valueOf(testString));
-        Verify.assertContains("string.subString", function1.toString());
-
-        Function<String, String> function2 = StringFunctions.subString(0, testString.length());
-        Assert.assertEquals(testString, function2.valueOf(testString));
-
-        Function<String, String> function3 = StringFunctions.subString(0, testString.length() + 1);
-        Verify.assertThrows(StringIndexOutOfBoundsException.class, () -> function3.valueOf(testString));
-
-        Function<String, String> function4 = StringFunctions.subString(-1, 1);
-        Verify.assertThrows(StringIndexOutOfBoundsException.class, () -> function4.valueOf(testString));
+        Assert.assertEquals("bS", StringFunctions.subString(2, 4).valueOf("subString"));
     }
 
     @Test(expected = StringIndexOutOfBoundsException.class)

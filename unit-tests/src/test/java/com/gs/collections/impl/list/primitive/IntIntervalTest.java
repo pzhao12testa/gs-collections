@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Goldman Sachs.
+ * Copyright 2014 Goldman Sachs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,14 +22,6 @@ import com.gs.collections.api.LazyIntIterable;
 import com.gs.collections.api.iterator.IntIterator;
 import com.gs.collections.impl.bag.mutable.primitive.IntHashBag;
 import com.gs.collections.impl.block.factory.primitive.IntPredicates;
-import com.gs.collections.impl.factory.primitive.BooleanLists;
-import com.gs.collections.impl.factory.primitive.ByteLists;
-import com.gs.collections.impl.factory.primitive.CharLists;
-import com.gs.collections.impl.factory.primitive.DoubleLists;
-import com.gs.collections.impl.factory.primitive.FloatLists;
-import com.gs.collections.impl.factory.primitive.IntLists;
-import com.gs.collections.impl.factory.primitive.LongLists;
-import com.gs.collections.impl.factory.primitive.ShortLists;
 import com.gs.collections.impl.list.mutable.FastList;
 import com.gs.collections.impl.list.mutable.primitive.IntArrayList;
 import com.gs.collections.impl.math.IntegerSum;
@@ -245,97 +237,6 @@ public class IntIntervalTest
     public void collect()
     {
         Assert.assertEquals(FastList.newListWith(0, 1, 2), this.intInterval.collect(parameter -> parameter - 1).toList());
-    }
-
-    @Test
-    public void lazyCollectPrimitives()
-    {
-        Assert.assertEquals(BooleanLists.immutable.of(false, true, false), IntInterval.oneTo(3).asLazy().collectBoolean(e -> e % 2 == 0).toList());
-        Assert.assertEquals(CharLists.immutable.of((char) 2, (char) 3, (char) 4), IntInterval.oneTo(3).asLazy().collectChar(e -> (char) (e + 1)).toList());
-        Assert.assertEquals(ByteLists.immutable.of((byte) 2, (byte) 3, (byte) 4), IntInterval.oneTo(3).asLazy().collectByte(e -> (byte) (e + 1)).toList());
-        Assert.assertEquals(ShortLists.immutable.of((short) 2, (short) 3, (short) 4), IntInterval.oneTo(3).asLazy().collectShort(e -> (short) (e + 1)).toList());
-        Assert.assertEquals(IntLists.immutable.of(2, 3, 4), IntInterval.oneTo(3).asLazy().collectInt(e -> e + 1).toList());
-        Assert.assertEquals(FloatLists.immutable.of(2.0f, 3.0f, 4.0f), IntInterval.oneTo(3).asLazy().collectFloat(e -> (float) (e + 1)).toList());
-        Assert.assertEquals(LongLists.immutable.of(2L, 3L, 4L), IntInterval.oneTo(3).asLazy().collectLong(e -> (long) (e + 1)).toList());
-        Assert.assertEquals(DoubleLists.immutable.of(2.0, 3.0, 4.0), IntInterval.oneTo(3).asLazy().collectDouble(e -> (double) (e + 1)).toList());
-    }
-
-    @Test
-    public void binarySearch()
-    {
-        IntInterval interval1 = IntInterval.oneTo(3);
-        Assert.assertEquals(-1, interval1.binarySearch(-1));
-        Assert.assertEquals(-1, interval1.binarySearch(0));
-        Assert.assertEquals(0, interval1.binarySearch(1));
-        Assert.assertEquals(1, interval1.binarySearch(2));
-        Assert.assertEquals(2, interval1.binarySearch(3));
-        Assert.assertEquals(-4, interval1.binarySearch(4));
-        Assert.assertEquals(-4, interval1.binarySearch(5));
-
-        IntInterval interval2 = IntInterval.fromTo(7, 17).by(3);
-        Assert.assertEquals(0, interval2.binarySearch(7));
-        Assert.assertEquals(1, interval2.binarySearch(10));
-        Assert.assertEquals(2, interval2.binarySearch(13));
-        Assert.assertEquals(3, interval2.binarySearch(16));
-        Assert.assertEquals(-1, interval2.binarySearch(6));
-        Assert.assertEquals(-2, interval2.binarySearch(8));
-        Assert.assertEquals(-2, interval2.binarySearch(9));
-        Assert.assertEquals(-3, interval2.binarySearch(12));
-        Assert.assertEquals(-4, interval2.binarySearch(15));
-        Assert.assertEquals(-5, interval2.binarySearch(17));
-        Assert.assertEquals(-5, interval2.binarySearch(19));
-
-        IntInterval interval3 = IntInterval.fromTo(-21, -11).by(5);
-        Assert.assertEquals(-1, interval3.binarySearch(-22));
-        Assert.assertEquals(0, interval3.binarySearch(-21));
-        Assert.assertEquals(-2, interval3.binarySearch(-17));
-        Assert.assertEquals(1, interval3.binarySearch(-16));
-        Assert.assertEquals(-3, interval3.binarySearch(-15));
-        Assert.assertEquals(2, interval3.binarySearch(-11));
-        Assert.assertEquals(-4, interval3.binarySearch(-9));
-
-        IntInterval interval4 = IntInterval.fromTo(50, 30).by(-10);
-        Assert.assertEquals(-1, interval4.binarySearch(60));
-        Assert.assertEquals(0, interval4.binarySearch(50));
-        Assert.assertEquals(-2, interval4.binarySearch(45));
-        Assert.assertEquals(1, interval4.binarySearch(40));
-        Assert.assertEquals(-3, interval4.binarySearch(35));
-        Assert.assertEquals(2, interval4.binarySearch(30));
-        Assert.assertEquals(-4, interval4.binarySearch(25));
-
-        IntInterval interval5 = IntInterval.fromTo(-30, -50).by(-10);
-        Assert.assertEquals(-1, interval5.binarySearch(-20));
-        Assert.assertEquals(0, interval5.binarySearch(-30));
-        Assert.assertEquals(-2, interval5.binarySearch(-35));
-        Assert.assertEquals(1, interval5.binarySearch(-40));
-        Assert.assertEquals(-3, interval5.binarySearch(-47));
-        Assert.assertEquals(2, interval5.binarySearch(-50));
-        Assert.assertEquals(-4, interval5.binarySearch(-65));
-
-        IntInterval interval6 = IntInterval.fromTo(27, -30).by(-9);
-        Assert.assertEquals(-1, interval6.binarySearch(30));
-        Assert.assertEquals(0, interval6.binarySearch(27));
-        Assert.assertEquals(-2, interval6.binarySearch(20));
-        Assert.assertEquals(1, interval6.binarySearch(18));
-        Assert.assertEquals(-3, interval6.binarySearch(15));
-        Assert.assertEquals(2, interval6.binarySearch(9));
-        Assert.assertEquals(-4, interval6.binarySearch(2));
-        Assert.assertEquals(3, interval6.binarySearch(0));
-        Assert.assertEquals(-5, interval6.binarySearch(-7));
-        Assert.assertEquals(4, interval6.binarySearch(-9));
-        Assert.assertEquals(-6, interval6.binarySearch(-12));
-        Assert.assertEquals(5, interval6.binarySearch(-18));
-        Assert.assertEquals(-7, interval6.binarySearch(-23));
-        Assert.assertEquals(6, interval6.binarySearch(-27));
-        Assert.assertEquals(-8, interval6.binarySearch(-28));
-        Assert.assertEquals(-8, interval6.binarySearch(-30));
-
-        IntInterval interval7 = IntInterval.fromTo(-1, 1).by(1);
-        Assert.assertEquals(-1, interval7.binarySearch(-2));
-        Assert.assertEquals(0, interval7.binarySearch(-1));
-        Assert.assertEquals(1, interval7.binarySearch(0));
-        Assert.assertEquals(2, interval7.binarySearch(1));
-        Assert.assertEquals(-4, interval7.binarySearch(2));
     }
 
     @Test

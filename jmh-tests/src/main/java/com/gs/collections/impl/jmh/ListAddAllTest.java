@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Goldman Sachs.
+ * Copyright 2014 Goldman Sachs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import com.gs.collections.api.list.MutableList;
-import com.gs.collections.impl.jmh.runner.AbstractJMHTestRunner;
 import com.gs.collections.impl.list.Interval;
 import com.gs.collections.impl.list.mutable.FastList;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -34,11 +33,11 @@ import org.openjdk.jmh.annotations.State;
 @State(Scope.Thread)
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.SECONDS)
-public class ListAddAllTest extends AbstractJMHTestRunner
+public class ListAddAllTest
 {
     private static final int SIZE = 1000;
     private final List<Integer> integersJDK = new ArrayList<>(Interval.oneTo(SIZE));
-    private final MutableList<Integer> integersGSC = FastList.newList(Interval.oneTo(SIZE));
+    private final MutableList<Integer> integersGSC = Interval.oneTo(SIZE).toList();
 
     @Benchmark
     public void jdk()
@@ -47,10 +46,6 @@ public class ListAddAllTest extends AbstractJMHTestRunner
         for (int i = 0; i < 1000; i++)
         {
             result.addAll(this.integersJDK);
-        }
-        if (result.size() != 1_000_000)
-        {
-            throw new AssertionError();
         }
     }
 
@@ -61,10 +56,6 @@ public class ListAddAllTest extends AbstractJMHTestRunner
         for (int i = 0; i < 1000; i++)
         {
             result.addAll(this.integersGSC);
-        }
-        if (result.size() != 1_000_000)
-        {
-            throw new AssertionError();
         }
     }
 }

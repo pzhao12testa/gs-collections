@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Goldman Sachs.
+ * Copyright 2014 Goldman Sachs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -137,7 +137,7 @@ public class ImmutableSortedSetMultimapTest extends AbstractImmutableMultimapTes
         ImmutableSortedSetMultimap<String, Integer> expectedImmutableMultimap = expectedMultimap.toImmutable();
         Assert.assertEquals(expectedImmutableMultimap, selectedMultimap);
         Verify.assertIterablesEqual(expectedImmutableMultimap.get("Two"), selectedMultimap.get("Two"));
-        Assert.assertSame(expectedMultimap.comparator(), selectedMultimap.comparator());
+        Assert.assertEquals(expectedMultimap.comparator(), selectedMultimap.comparator());
     }
 
     @Override
@@ -173,7 +173,7 @@ public class ImmutableSortedSetMultimapTest extends AbstractImmutableMultimapTes
         ImmutableSortedSetMultimap<Integer, Integer> expectedImmutableMultimap = expectedMultimap.toImmutable();
         Assert.assertEquals(expectedImmutableMultimap, selectedMultimap);
         Verify.assertIterablesEqual(expectedImmutableMultimap.get(2), selectedMultimap.get(2));
-        Assert.assertSame(expectedMultimap.comparator(), selectedMultimap.comparator());
+        Assert.assertEquals(expectedMultimap.comparator(), selectedMultimap.comparator());
     }
 
     @Override
@@ -192,7 +192,7 @@ public class ImmutableSortedSetMultimapTest extends AbstractImmutableMultimapTes
         ImmutableSortedSetMultimap<Integer, Integer> expectedImmutableMultimap = expectedMultimap.toImmutable();
         Assert.assertEquals(expectedImmutableMultimap, selectedMultimap);
         Verify.assertIterablesEqual(expectedImmutableMultimap.get(3), selectedMultimap.get(3));
-        Assert.assertSame(expectedMultimap.comparator(), selectedMultimap.comparator());
+        Assert.assertEquals(expectedMultimap.comparator(), selectedMultimap.comparator());
     }
 
     @Override

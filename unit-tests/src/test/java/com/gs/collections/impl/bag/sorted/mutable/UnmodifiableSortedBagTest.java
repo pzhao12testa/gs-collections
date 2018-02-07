@@ -33,7 +33,7 @@ import org.junit.Test;
  *
  * @since 4.2
  */
-public class UnmodifiableSortedBagTest extends AbstractMutableSortedBagTestCase
+public class UnmodifiableSortedBagTest extends AbstractSortedBagTestCase
 {
     @Override
     protected <T> MutableSortedBag<T> newWith(T... elements)
@@ -157,21 +157,6 @@ public class UnmodifiableSortedBagTest extends AbstractMutableSortedBagTestCase
         Verify.assertThrows(UnsupportedOperationException.class, iterator3::remove);
         Assert.assertEquals(Integer.valueOf(2), iterator3.next());
         Verify.assertThrows(UnsupportedOperationException.class, iterator3::remove);
-    }
-
-    @Override
-    @Test
-    public void iteratorRemove()
-    {
-        MutableSortedBag<Integer> bag = this.newWith(-1, 0, 1, 1, 2);
-        Iterator<Integer> iterator = bag.iterator();
-        Verify.assertThrows(UnsupportedOperationException.class, iterator::remove);
-    }
-
-    @Override
-    @Test
-    public void iteratorRemove2()
-    {
     }
 
     @Test

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Goldman Sachs.
+ * Copyright 2014 Goldman Sachs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,11 +30,6 @@ public final class ImmutableSortedSetFactoryImpl implements ImmutableSortedSetFa
     public <T> ImmutableSortedSet<T> empty()
     {
         return (ImmutableSortedSet<T>) ImmutableEmptySortedSet.INSTANCE;
-    }
-
-    public <T> ImmutableSortedSet<T> empty(Comparator<? super T> comparator)
-    {
-        return new ImmutableEmptySortedSet<T>(comparator);
     }
 
     public <T> ImmutableSortedSet<T> of()

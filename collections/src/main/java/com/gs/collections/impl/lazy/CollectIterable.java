@@ -94,7 +94,12 @@ public class CollectIterable<T, V>
     @Override
     public Object[] toArray()
     {
-        return this.toList().toArray();
+        Object[] array = Iterate.toArray(this.adapted);
+        for (int i = 0; i < array.length; i++)
+        {
+            array[i] = this.function.valueOf((T) array[i]);
+        }
+        return array;
     }
 
     @Override

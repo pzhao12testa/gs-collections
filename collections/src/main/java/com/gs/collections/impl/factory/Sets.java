@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Goldman Sachs.
+ * Copyright 2014 Goldman Sachs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 
 package com.gs.collections.impl.factory;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Set;
@@ -45,7 +44,7 @@ import com.gs.collections.impl.utility.Iterate;
 import com.gs.collections.impl.utility.LazyIterate;
 
 /**
- * Set algebra operations are available in this class as static utility.
+ * Set algebra operations.
  * <p>
  * Most operations are non-destructive, i.e. no input sets are modified during execution.
  * The exception is operations ending in "Into." These accept the target collection of
@@ -55,32 +54,6 @@ import com.gs.collections.impl.utility.LazyIterate;
  * this is not guaranteed (e.g., this will not be the case for collections proxied by
  * Hibernate). When in doubt, specify the target collection explicitly with the "Into"
  * version.
- *
- * This class should be used to create instances of MutableSet, ImmutableSet and FixedSizeSet
- * <p>
- * Mutable Examples:
- *
- * <pre>
- * MutableSet&lt;String&gt; emptySet = Sets.mutable.empty();
- * MutableSet&lt;String&gt; setWith = Sets.mutable.with("a", "b", "c");
- * MutableSet&lt;String&gt; setOf = Sets.mutable.of("a", "b", "c");
- * </pre>
- *
- * Immutable Examples:
- *
- * <pre>
- * ImmutableSet&lt;String&gt; emptySet = Sets.immutable.empty();
- * ImmutableSet&lt;String&gt; setWith = Sets.immutable.with("a", "b", "c");
- * ImmutableSet&lt;String&gt; setOf = Sets.immutable.of("a", "b", "c");
- * </pre>
- *
- * FixedSize Examples:
- *
- * <pre>
- * FixedSizeList&lt;String&gt; emptySet = Sets.fixedSize.empty();
- * FixedSizeList&lt;String&gt; setWith = Sets.fixedSize.with("a", "b", "c");
- * FixedSizeList&lt;String&gt; setOf = Sets.fixedSize.of("a", "b", "c");
- * </pre>
  */
 @SuppressWarnings("ConstantNamingConvention")
 public final class Sets
@@ -135,7 +108,7 @@ public final class Sets
             R targetSet,
             Set<? extends E>... sets)
     {
-        Arrays.sort(sets, 0, sets.length, Comparators.descendingCollectionSizeComparator());
+        ArrayIterate.sort(sets, sets.length, Comparators.descendingCollectionSizeComparator());
         return fillSet(targetSet, Sets.<E, R>addAllProcedure(), sets);
     }
 
@@ -164,7 +137,7 @@ public final class Sets
             R targetSet,
             Set<? extends E>... sets)
     {
-        Arrays.sort(sets, 0, sets.length, Comparators.ascendingCollectionSizeComparator());
+        ArrayIterate.sort(sets, sets.length, Comparators.ascendingCollectionSizeComparator());
         return fillSet(targetSet, Sets.<E, R>retainAllProcedure(), sets);
     }
 

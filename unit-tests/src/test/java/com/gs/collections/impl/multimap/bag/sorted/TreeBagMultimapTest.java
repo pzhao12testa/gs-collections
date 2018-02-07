@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Goldman Sachs.
+ * Copyright 2014 Goldman Sachs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,10 +32,7 @@ import org.junit.Test;
 
 /**
  * Test of {@link TreeBagMultimap}.
- *
- * @deprecated in 7.0
  */
-@Deprecated
 public class TreeBagMultimapTest extends AbstractMutableSortedBagMultimapTestCase
 {
     @Override

@@ -92,13 +92,6 @@ final class Immutable<name>EmptyList implements Immutable<name>List, Serializabl
     {
     }
 
-    /**
-     * @since 7.0.
-     */
-    public void each(<name>Procedure procedure)
-    {
-    }
-
     public void forEachWithIndex(<name>IntProcedure procedure)
     {
     }
@@ -378,11 +371,6 @@ public <type>[] toSortedArray()
 public Mutable<name>List toSortedList()
 {
     return new <name>ArrayList();
-}
-
-public int binarySearch(<type> value)
-{
-    return -1;
 }
 
 public <wideType.(type)> dotProduct(<name>List list)

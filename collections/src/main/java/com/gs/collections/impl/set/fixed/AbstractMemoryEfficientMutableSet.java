@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Goldman Sachs.
+ * Copyright 2014 Goldman Sachs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,13 +81,13 @@ abstract class AbstractMemoryEfficientMutableSet<T>
     }
 
     @Override
-    public boolean removeIf(Predicate<? super T> predicate)
+    public void removeIf(Predicate<? super T> predicate)
     {
         throw new UnsupportedOperationException("Cannot remove from a fixed size set: " + this.getClass());
     }
 
     @Override
-    public <P> boolean removeIfWith(Predicate2<? super T, ? super P> predicate, P parameter)
+    public <P> void removeIfWith(Predicate2<? super T, ? super P> predicate, P parameter)
     {
         throw new UnsupportedOperationException("Cannot removeIfWith from a fixed size set: " + this.getClass());
     }

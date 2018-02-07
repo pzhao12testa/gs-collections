@@ -184,14 +184,6 @@ public final class Synchronized<name>Stack
 
     public void forEach(<name>Procedure procedure)
     {
-        this.each(procedure);
-    }
-
-    /**
-     * @since 7.0.
-     */
-    public void each(<name>Procedure procedure)
-    {
         synchronized (this.lock)
         {
             this.stack.forEach(procedure);

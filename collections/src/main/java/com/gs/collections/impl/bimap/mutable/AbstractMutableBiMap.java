@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Goldman Sachs.
+ * Copyright 2015 Goldman Sachs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -213,9 +213,7 @@ abstract class AbstractMutableBiMap<K, V> extends AbstractBiMap<K, V> implements
         V put = this.delegate.put(key, value);
         if (containsKey)
         {
-            K oldKeyToPreserve = this.inverse.delegate.removeKey(put);
-            this.inverse.delegate.put(value, oldKeyToPreserve);
-            return put;
+            this.inverse.delegate.removeKey(put);
         }
         this.inverse.delegate.put(value, key);
         return put;
@@ -230,20 +228,6 @@ abstract class AbstractMutableBiMap<K, V> extends AbstractBiMap<K, V> implements
             {
                 return value;
             }
-            boolean containsKey = this.delegate.containsKey(key);
-            V oldValueToPreserve = this.delegate.get(this.inverse.delegate.get(value));
-            V put = this.delegate.put(key, oldValueToPreserve);
-
-            if (containsKey)
-            {
-                K oldKeyToPreserve = this.inverse.delegate.removeKey(put);
-                K oldKey = this.inverse.delegate.put(value, oldKeyToPreserve);
-                this.delegate.removeKey(oldKey);
-                return put;
-            }
-            K oldKey = this.inverse.delegate.put(value, key);
-            this.delegate.removeKey(oldKey);
-            return put;
         }
 
         boolean containsKey = this.delegate.containsKey(key);
@@ -252,7 +236,11 @@ abstract class AbstractMutableBiMap<K, V> extends AbstractBiMap<K, V> implements
         {
             this.inverse.delegate.removeKey(put);
         }
-        this.inverse.delegate.put(value, key);
+        K oldKey = this.inverse.delegate.put(value, key);
+        if (containsValue)
+        {
+            this.delegate.removeKey(oldKey);
+        }
         return put;
     }
 

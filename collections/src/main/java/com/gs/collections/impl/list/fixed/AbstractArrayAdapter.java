@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.RandomAccess;
 
-import com.gs.collections.api.block.HashingStrategy;
 import com.gs.collections.api.block.function.Function;
 import com.gs.collections.api.block.function.Function0;
 import com.gs.collections.api.block.function.Function2;
@@ -113,13 +112,13 @@ public abstract class AbstractArrayAdapter<T>
     }
 
     @Override
-    public boolean removeIf(Predicate<? super T> predicate)
+    public void removeIf(Predicate<? super T> predicate)
     {
         throw new UnsupportedOperationException("Cannot call removeIf() on " + this.getClass().getSimpleName());
     }
 
     @Override
-    public <P> boolean removeIfWith(Predicate2<? super T, ? super P> predicate, P parameter)
+    public <P> void removeIfWith(Predicate2<? super T, ? super P> predicate, P parameter)
     {
         throw new UnsupportedOperationException("Cannot call removeIfWith() on " + this.getClass().getSimpleName());
     }
@@ -543,13 +542,7 @@ public abstract class AbstractArrayAdapter<T>
     @Override
     public MutableList<T> distinct()
     {
-        return InternalArrayIterate.distinct(this.items, this.items.length);
-    }
-
-    @Override
-    public MutableList<T> distinct(HashingStrategy<? super T> hashingStrategy)
-    {
-        return InternalArrayIterate.distinct(this.items, this.items.length, hashingStrategy);
+        return InternalArrayIterate.distinct(this.items, this.items.length, FastList.<T>newList());
     }
 
     @Override

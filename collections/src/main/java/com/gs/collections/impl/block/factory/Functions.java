@@ -195,15 +195,6 @@ public final class Functions
     }
 
     /**
-     * Allows a Java 8 lambda and method reference to be used in a method taking a Function as a parameter
-     * without any ambiguity.
-     */
-    public static <T, V> Function<T, V> cast(Function<T, V> function)
-    {
-        return function;
-    }
-
-    /**
      * Alias for identity(). Inlineable.
      *
      * @see #identity()
@@ -1119,12 +1110,12 @@ public final class Functions
         }
     }
 
-    private static final class ThrowingFunctionAdapter<T, V> extends CheckedFunction<T, V>
+    private static class ThrowingFunctionAdapter<T, V> extends CheckedFunction<T, V>
     {
         private static final long serialVersionUID = 1L;
         private final ThrowingFunction<T, V> throwingFunction;
 
-        private ThrowingFunctionAdapter(ThrowingFunction<T, V> throwingFunction)
+        public ThrowingFunctionAdapter(ThrowingFunction<T, V> throwingFunction)
         {
             this.throwingFunction = throwingFunction;
         }

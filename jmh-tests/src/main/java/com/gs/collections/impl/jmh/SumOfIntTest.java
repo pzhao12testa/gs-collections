@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Goldman Sachs.
+ * Copyright 2014 Goldman Sachs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.gs.collections.api.list.MutableList;
-import com.gs.collections.impl.jmh.runner.AbstractJMHTestRunner;
 import com.gs.collections.impl.list.mutable.FastList;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
@@ -39,7 +38,7 @@ import org.openjdk.jmh.annotations.TearDown;
 @State(Scope.Thread)
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.SECONDS)
-public class SumOfIntTest extends AbstractJMHTestRunner
+public class SumOfIntTest
 {
     private static final int SIZE = 3_000_000;
     private static final int BATCH_SIZE = 10_000;
@@ -70,21 +69,9 @@ public class SumOfIntTest extends AbstractJMHTestRunner
     }
 
     @Benchmark
-    public int serial_lazy_collectIntSum_streams_gsc()
-    {
-        return this.integersGSC.stream().mapToInt(each -> each).sum();
-    }
-
-    @Benchmark
     public long serial_lazy_collectLongSum_jdk()
     {
         return this.integersJDK.stream().mapToLong(each -> each).sum();
-    }
-
-    @Benchmark
-    public long serial_lazy_collectLongSum_streams_gsc()
-    {
-        return this.integersGSC.stream().mapToLong(each -> each).sum();
     }
 
     @Benchmark
@@ -94,21 +81,9 @@ public class SumOfIntTest extends AbstractJMHTestRunner
     }
 
     @Benchmark
-    public int parallel_lazy_collectIntSum_streams_gsc()
-    {
-        return this.integersGSC.parallelStream().mapToInt(Integer::intValue).sum();
-    }
-
-    @Benchmark
     public long parallel_lazy_collectLongSum_jdk()
     {
         return this.integersJDK.parallelStream().mapToLong(Integer::longValue).sum();
-    }
-
-    @Benchmark
-    public long parallel_lazy_collectLongSum_streams_gsc()
-    {
-        return this.integersGSC.parallelStream().mapToLong(Integer::longValue).sum();
     }
 
     @Benchmark

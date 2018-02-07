@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Goldman Sachs.
+ * Copyright 2014 Goldman Sachs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package com.gs.collections.impl.lazy.parallel;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.NoSuchElementException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -882,7 +883,8 @@ public abstract class ParallelIterableTestCase
     {
         FloatFunction<Integer> roundingSensitiveElementFunction = i -> (i <= 99995) ? 1.0e-18f : 1.0f;
 
-        MutableList<Integer> list = Interval.oneTo(100_000).toList().shuffleThis();
+        MutableList<Integer> list = Interval.oneTo(100_000).toList();
+        Collections.shuffle(list);
         double baseline = this.getExpectedWith(list.toArray(new Integer[]{}))
                 .sumOfFloat(roundingSensitiveElementFunction);
 
@@ -912,7 +914,8 @@ public abstract class ParallelIterableTestCase
     {
         DoubleFunction<Integer> roundingSensitiveElementFunction = i -> (i <= 99995) ? 1.0e-18d : 1.0d;
 
-        MutableList<Integer> list = Interval.oneTo(100_000).toList().shuffleThis();
+        MutableList<Integer> list = Interval.oneTo(100_000).toList();
+        Collections.shuffle(list);
         double baseline = this.getExpectedWith(list.toArray(new Integer[]{}))
                 .sumOfDouble(roundingSensitiveElementFunction);
 

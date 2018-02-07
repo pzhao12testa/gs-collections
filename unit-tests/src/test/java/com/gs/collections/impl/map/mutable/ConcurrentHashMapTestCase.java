@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Goldman Sachs.
+ * Copyright 2014 Goldman Sachs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,7 +69,8 @@ public abstract class ConcurrentHashMapTestCase extends MutableMapTestCase
         super.updateValue_collisions();
 
         ConcurrentMutableMap<Integer, Integer> map = this.newMap();
-        MutableList<Integer> list = Interval.oneTo(100).toList().shuffleThis();
+        MutableList<Integer> list = Interval.oneTo(100).toList();
+        Collections.shuffle(list);
         ParallelIterate.forEach(list, each -> map.updateValue(each % 50, () -> 0, integer -> integer + 1), 1, this.executor);
         Assert.assertEquals(Interval.zeroTo(49).toSet(), map.keySet());
         Assert.assertEquals(
@@ -100,7 +101,8 @@ public abstract class ConcurrentHashMapTestCase extends MutableMapTestCase
         super.updateValueWith_collisions();
 
         ConcurrentMutableMap<Integer, Integer> map = this.newMap();
-        MutableList<Integer> list = Interval.oneTo(200).toList().shuffleThis();
+        MutableList<Integer> list = Interval.oneTo(200).toList();
+        Collections.shuffle(list);
         ParallelIterate.forEach(list, each -> map.updateValueWith(each % 100, () -> 0, (integer, parameter) -> {
             Assert.assertEquals("test", parameter);
             return integer + 1;

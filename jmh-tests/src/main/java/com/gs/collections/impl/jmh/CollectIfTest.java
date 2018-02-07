@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Goldman Sachs.
+ * Copyright 2014 Goldman Sachs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,21 +25,22 @@ import java.util.stream.Collectors;
 
 import com.gs.collections.api.list.MutableList;
 import com.gs.collections.api.list.ParallelListIterable;
-import com.gs.collections.impl.jmh.runner.AbstractJMHTestRunner;
 import com.gs.collections.impl.list.Interval;
 import com.gs.collections.impl.list.mutable.FastList;
 import com.gs.collections.impl.parallel.ParallelIterate;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
+import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.OutputTimeUnit;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.State;
+import org.openjdk.jmh.annotations.Warmup;
 
 @State(Scope.Thread)
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.SECONDS)
-public class CollectIfTest extends AbstractJMHTestRunner
+public class CollectIfTest
 {
     private static final int SIZE = 1_000_000;
     private static final int BATCH_SIZE = 10_000;
@@ -55,26 +56,14 @@ public class CollectIfTest extends AbstractJMHTestRunner
     }
 
     @Benchmark
-    public void serial_lazy_streams_gsc()
-    {
-        List<String> evenStrings = this.integersGSC.stream().filter(e -> e % 2 == 0).map(Object::toString).collect(Collectors.toList());
-        List<String> oddStrings = this.integersGSC.stream().filter(e -> e % 2 == 1).map(Object::toString).collect(Collectors.toList());
-    }
-
-    @Benchmark
     public void parallel_lazy_jdk()
     {
         List<String> evenStrings = this.integersJDK.parallelStream().filter(e -> e % 2 == 0).map(Object::toString).collect(Collectors.toList());
         List<String> oddStrings = this.integersJDK.parallelStream().filter(e -> e % 2 == 1).map(Object::toString).collect(Collectors.toList());
     }
 
-    @Benchmark
-    public void parallel_lazy_streams_gsc()
-    {
-        List<String> evenStrings = this.integersGSC.parallelStream().filter(e -> e % 2 == 0).map(Object::toString).collect(Collectors.toList());
-        List<String> oddStrings = this.integersGSC.parallelStream().filter(e -> e % 2 == 1).map(Object::toString).collect(Collectors.toList());
-    }
-
+    @Warmup(iterations = 20)
+    @Measurement(iterations = 10)
     @Benchmark
     public void serial_eager_gsc()
     {

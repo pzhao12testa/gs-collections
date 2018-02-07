@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Goldman Sachs.
+ * Copyright 2014 Goldman Sachs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,6 @@ import java.util.stream.Collectors;
 import com.gs.collections.api.map.MapIterable;
 import com.gs.collections.api.map.MutableMap;
 import com.gs.collections.api.set.Pool;
-import com.gs.collections.impl.jmh.runner.AbstractJMHTestRunner;
 import com.gs.collections.impl.list.mutable.FastList;
 import com.gs.collections.impl.parallel.ParallelIterate;
 import com.gs.collections.impl.set.mutable.UnifiedSet;
@@ -43,17 +42,19 @@ import org.junit.Test;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Level;
+import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.OutputTimeUnit;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
+import org.openjdk.jmh.annotations.Warmup;
 
 @State(Scope.Thread)
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.SECONDS)
-public class AggregateByTest extends AbstractJMHTestRunner
+public class AggregateByTest
 {
     private static final int SIZE = 1_000_000;
     private static final int BATCH_SIZE = 10_000;
@@ -73,7 +74,7 @@ public class AggregateByTest extends AbstractJMHTestRunner
     public void setUp()
     {
         this.executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-        this.gscPositions.shuffleThis();
+        Collections.shuffle(this.gscPositions);
         Collections.shuffle(this.jdkPositions);
     }
 
@@ -85,6 +86,8 @@ public class AggregateByTest extends AbstractJMHTestRunner
         this.executorService.awaitTermination(1L, TimeUnit.SECONDS);
     }
 
+    @Warmup(iterations = 20)
+    @Measurement(iterations = 10)
     @Benchmark
     public Map<Product, DoubleSummaryStatistics> aggregateByProduct_serial_lazy_jdk()
     {
@@ -97,18 +100,8 @@ public class AggregateByTest extends AbstractJMHTestRunner
         return result;
     }
 
-    @Benchmark
-    public Map<Product, DoubleSummaryStatistics> aggregateByProduct_serial_lazy_streams_gsc()
-    {
-        Map<Product, DoubleSummaryStatistics> result =
-                this.gscPositions.stream().collect(
-                        Collectors.groupingBy(
-                                Position::getProduct,
-                                Collectors.summarizingDouble(Position::getMarketValue)));
-        Assert.assertNotNull(result);
-        return result;
-    }
-
+    @Warmup(iterations = 20)
+    @Measurement(iterations = 10)
     @Benchmark
     public Map<Account, DoubleSummaryStatistics> aggregateByAccount_serial_lazy_jdk()
     {
@@ -121,18 +114,8 @@ public class AggregateByTest extends AbstractJMHTestRunner
         return accountDoubleMap;
     }
 
-    @Benchmark
-    public Map<Account, DoubleSummaryStatistics> aggregateByAccount_serial_lazy_streams_gsc()
-    {
-        Map<Account, DoubleSummaryStatistics> accountDoubleMap =
-                this.gscPositions.stream().collect(
-                        Collectors.groupingBy(
-                                Position::getAccount,
-                                Collectors.summarizingDouble(Position::getMarketValue)));
-        Assert.assertNotNull(accountDoubleMap);
-        return accountDoubleMap;
-    }
-
+    @Warmup(iterations = 20)
+    @Measurement(iterations = 10)
     @Benchmark
     public Map<String, DoubleSummaryStatistics> aggregateByCategory_serial_lazy_jdk()
     {
@@ -145,18 +128,8 @@ public class AggregateByTest extends AbstractJMHTestRunner
         return categoryDoubleMap;
     }
 
-    @Benchmark
-    public Map<String, DoubleSummaryStatistics> aggregateByCategory_serial_lazy_streams_gsc()
-    {
-        Map<String, DoubleSummaryStatistics> categoryDoubleMap =
-                this.gscPositions.stream().collect(
-                        Collectors.groupingBy(
-                                Position::getCategory,
-                                Collectors.summarizingDouble(Position::getMarketValue)));
-        Assert.assertNotNull(categoryDoubleMap);
-        return categoryDoubleMap;
-    }
-
+    @Warmup(iterations = 20)
+    @Measurement(iterations = 10)
     @Benchmark
     public Map<Product, DoubleSummaryStatistics> aggregateByProduct_parallel_lazy_jdk()
     {
@@ -169,18 +142,8 @@ public class AggregateByTest extends AbstractJMHTestRunner
         return result;
     }
 
-    @Benchmark
-    public Map<Product, DoubleSummaryStatistics> aggregateByProduct_parallel_lazy_streams_gsc()
-    {
-        Map<Product, DoubleSummaryStatistics> result =
-                this.gscPositions.parallelStream().collect(
-                        Collectors.groupingBy(
-                                Position::getProduct,
-                                Collectors.summarizingDouble(Position::getMarketValue)));
-        Assert.assertNotNull(result);
-        return result;
-    }
-
+    @Warmup(iterations = 20)
+    @Measurement(iterations = 10)
     @Benchmark
     public Map<Account, DoubleSummaryStatistics> aggregateByAccount_parallel_lazy_jdk()
     {
@@ -193,18 +156,8 @@ public class AggregateByTest extends AbstractJMHTestRunner
         return result;
     }
 
-    @Benchmark
-    public Map<Account, DoubleSummaryStatistics> aggregateByAccount_parallel_lazy_streams_gsc()
-    {
-        Map<Account, DoubleSummaryStatistics> result =
-                this.gscPositions.parallelStream().collect(
-                        Collectors.groupingBy(
-                                Position::getAccount,
-                                Collectors.summarizingDouble(Position::getMarketValue)));
-        Assert.assertNotNull(result);
-        return result;
-    }
-
+    @Warmup(iterations = 20)
+    @Measurement(iterations = 10)
     @Benchmark
     public Map<String, DoubleSummaryStatistics> aggregateByCategory_parallel_lazy_jdk()
     {
@@ -215,16 +168,8 @@ public class AggregateByTest extends AbstractJMHTestRunner
         return result;
     }
 
-    @Benchmark
-    public Map<String, DoubleSummaryStatistics> aggregateByCategory_parallel_lazy_streams_gsc()
-    {
-        Map<String, DoubleSummaryStatistics> result =
-                this.gscPositions.parallelStream().collect(
-                        Collectors.groupingBy(Position::getCategory, Collectors.summarizingDouble(Position::getMarketValue)));
-        Assert.assertNotNull(result);
-        return result;
-    }
-
+    @Warmup(iterations = 20)
+    @Measurement(iterations = 10)
     @Benchmark
     public MutableMap<Product, ImmutableMarketValueStatistics> aggregateByProduct_serial_eager_gsc()
     {
@@ -237,6 +182,8 @@ public class AggregateByTest extends AbstractJMHTestRunner
         return result;
     }
 
+    @Warmup(iterations = 20)
+    @Measurement(iterations = 10)
     @Benchmark
     public MutableMap<Account, ImmutableMarketValueStatistics> aggregateByAccount_serial_eager_gsc()
     {
@@ -249,6 +196,8 @@ public class AggregateByTest extends AbstractJMHTestRunner
         return result;
     }
 
+    @Warmup(iterations = 20)
+    @Measurement(iterations = 10)
     @Benchmark
     public MutableMap<String, ImmutableMarketValueStatistics> aggregateByCategory_serial_eager_gsc()
     {
@@ -261,6 +210,8 @@ public class AggregateByTest extends AbstractJMHTestRunner
         return result;
     }
 
+    @Warmup(iterations = 20)
+    @Measurement(iterations = 10)
     @Benchmark
     public MutableMap<Product, ImmutableMarketValueStatistics> aggregateByProduct_parallel_eager_gsc()
     {
@@ -274,6 +225,8 @@ public class AggregateByTest extends AbstractJMHTestRunner
         return result;
     }
 
+    @Warmup(iterations = 20)
+    @Measurement(iterations = 10)
     @Benchmark
     public MutableMap<Account, ImmutableMarketValueStatistics> aggregateByAccount_parallel_eager_gsc()
     {
@@ -287,6 +240,8 @@ public class AggregateByTest extends AbstractJMHTestRunner
         return result;
     }
 
+    @Warmup(iterations = 20)
+    @Measurement(iterations = 10)
     @Benchmark
     public MutableMap<String, ImmutableMarketValueStatistics> aggregateByCategory_parallel_eager_gsc()
     {
@@ -300,6 +255,8 @@ public class AggregateByTest extends AbstractJMHTestRunner
         return result;
     }
 
+    @Warmup(iterations = 20)
+    @Measurement(iterations = 10)
     @Benchmark
     public MapIterable<Product, ImmutableMarketValueStatistics> aggregateByProduct_serial_lazy_gsc()
     {
@@ -312,6 +269,8 @@ public class AggregateByTest extends AbstractJMHTestRunner
         return result;
     }
 
+    @Warmup(iterations = 20)
+    @Measurement(iterations = 10)
     @Benchmark
     public MapIterable<Account, ImmutableMarketValueStatistics> aggregateByAccount_serial_lazy_gsc()
     {
@@ -324,6 +283,8 @@ public class AggregateByTest extends AbstractJMHTestRunner
         return result;
     }
 
+    @Warmup(iterations = 20)
+    @Measurement(iterations = 10)
     @Benchmark
     public MapIterable<String, ImmutableMarketValueStatistics> aggregateByCategory_serial_lazy_gsc()
     {
@@ -336,6 +297,8 @@ public class AggregateByTest extends AbstractJMHTestRunner
         return result;
     }
 
+    @Warmup(iterations = 20)
+    @Measurement(iterations = 10)
     @Benchmark
     public MapIterable<Product, ImmutableMarketValueStatistics> aggregateByProduct_parallel_lazy_gsc()
     {
@@ -358,6 +321,8 @@ public class AggregateByTest extends AbstractJMHTestRunner
         Verify.assertMapsEqual((Map<Product, ImmutableMarketValueStatistics>) expected, (Map<Product, ImmutableMarketValueStatistics>) actual);
     }
 
+    @Warmup(iterations = 20)
+    @Measurement(iterations = 10)
     @Benchmark
     public MapIterable<Account, ImmutableMarketValueStatistics> aggregateByAccount_parallel_lazy_gsc()
     {
@@ -380,6 +345,8 @@ public class AggregateByTest extends AbstractJMHTestRunner
         Verify.assertMapsEqual((Map<Account, ImmutableMarketValueStatistics>) expected, (Map<Account, ImmutableMarketValueStatistics>) actual);
     }
 
+    @Warmup(iterations = 20)
+    @Measurement(iterations = 10)
     @Benchmark
     public MapIterable<String, ImmutableMarketValueStatistics> aggregateByCategory_parallel_lazy_gsc()
     {
@@ -402,6 +369,8 @@ public class AggregateByTest extends AbstractJMHTestRunner
         Verify.assertMapsEqual((Map<String, ImmutableMarketValueStatistics>) expected, (Map<String, ImmutableMarketValueStatistics>) actual);
     }
 
+    @Warmup(iterations = 20)
+    @Measurement(iterations = 10)
     @Benchmark
     public MutableMap<Product, MarketValueStatistics> aggregateInPlaceByProduct_serial_eager_gsc()
     {
@@ -414,6 +383,8 @@ public class AggregateByTest extends AbstractJMHTestRunner
         return result;
     }
 
+    @Warmup(iterations = 20)
+    @Measurement(iterations = 10)
     @Benchmark
     public MutableMap<Account, MarketValueStatistics> aggregateInPlaceByAccount_serial_eager_gsc()
     {
@@ -426,6 +397,8 @@ public class AggregateByTest extends AbstractJMHTestRunner
         return result;
     }
 
+    @Warmup(iterations = 20)
+    @Measurement(iterations = 10)
     @Benchmark
     public MutableMap<String, MarketValueStatistics> aggregateInPlaceByCategory_serial_eager_gsc()
     {
@@ -438,6 +411,8 @@ public class AggregateByTest extends AbstractJMHTestRunner
         return result;
     }
 
+    @Warmup(iterations = 20)
+    @Measurement(iterations = 10)
     @Benchmark
     public MutableMap<Product, MarketValueStatistics> aggregateInPlaceByProduct_parallel_eager_gsc()
     {
@@ -451,6 +426,8 @@ public class AggregateByTest extends AbstractJMHTestRunner
         return result;
     }
 
+    @Warmup(iterations = 20)
+    @Measurement(iterations = 10)
     @Benchmark
     public MutableMap<Account, MarketValueStatistics> aggregateInPlaceByAccount_parallel_eager_gsc()
     {
@@ -464,6 +441,8 @@ public class AggregateByTest extends AbstractJMHTestRunner
         return result;
     }
 
+    @Warmup(iterations = 20)
+    @Measurement(iterations = 10)
     @Benchmark
     public MutableMap<String, MarketValueStatistics> aggregateInPlaceByCategory_parallel_eager_gsc()
     {
@@ -477,6 +456,8 @@ public class AggregateByTest extends AbstractJMHTestRunner
         return result;
     }
 
+    @Warmup(iterations = 20)
+    @Measurement(iterations = 10)
     @Benchmark
     public MapIterable<Product, MarketValueStatistics> aggregateInPlaceByProduct_parallel_lazy_gsc()
     {
@@ -499,6 +480,8 @@ public class AggregateByTest extends AbstractJMHTestRunner
         Verify.assertMapsEqual((Map<Product, MarketValueStatistics>) expected, (Map<Product, MarketValueStatistics>) actual);
     }
 
+    @Warmup(iterations = 20)
+    @Measurement(iterations = 10)
     @Benchmark
     public MapIterable<Account, MarketValueStatistics> aggregateInPlaceByAccount_parallel_lazy_gsc()
     {
@@ -521,6 +504,8 @@ public class AggregateByTest extends AbstractJMHTestRunner
         Verify.assertMapsEqual((Map<Account, MarketValueStatistics>) expected, (Map<Account, MarketValueStatistics>) actual);
     }
 
+    @Warmup(iterations = 20)
+    @Measurement(iterations = 10)
     @Benchmark
     public MapIterable<String, MarketValueStatistics> aggregateInPlaceByCategory_parallel_lazy_gsc()
     {
@@ -557,12 +542,12 @@ public class AggregateByTest extends AbstractJMHTestRunner
         private final double min;
         private final double max;
 
-        private ImmutableMarketValueStatistics()
+        public ImmutableMarketValueStatistics()
         {
             this(0, 0.0, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY);
         }
 
-        private ImmutableMarketValueStatistics(long count, double sum, double min, double max)
+        public ImmutableMarketValueStatistics(long count, double sum, double min, double max)
         {
             this.count = count;
             this.sum = sum;
@@ -611,7 +596,7 @@ public class AggregateByTest extends AbstractJMHTestRunner
             {
                 return false;
             }
-            return AggregateByTest.isCloseTo(that.sum, this.sum, 0.0001);
+            return isCloseTo(that.sum, this.sum, 0.0001);
         }
 
         @Override

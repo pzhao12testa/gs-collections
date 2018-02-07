@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Goldman Sachs.
+ * Copyright 2014 Goldman Sachs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import com.gs.collections.api.list.MutableList;
-import com.gs.collections.impl.jmh.runner.AbstractJMHTestRunner;
 import com.gs.collections.impl.list.Interval;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
@@ -38,7 +37,7 @@ import org.openjdk.jmh.annotations.TearDown;
 @State(Scope.Thread)
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.SECONDS)
-public class MaxTest extends AbstractJMHTestRunner
+public class MaxTest
 {
     private static final int SIZE = 3_000_000;
     private static final int BATCH_SIZE = 10_000;
@@ -74,21 +73,9 @@ public class MaxTest extends AbstractJMHTestRunner
     }
 
     @Benchmark
-    public int serial_lazy_reverse_streams_gsc()
-    {
-        return this.integersGSC.stream().max(Comparator.<Integer>reverseOrder()).get();
-    }
-
-    @Benchmark
     public int serial_lazy_intstream_jdk()
     {
         return this.integersJDK.stream().mapToInt(Integer::intValue).max().getAsInt();
-    }
-
-    @Benchmark
-    public int serial_lazy_intstream_streams_gsc()
-    {
-        return this.integersGSC.stream().mapToInt(Integer::intValue).max().getAsInt();
     }
 
     @Benchmark
@@ -98,33 +85,15 @@ public class MaxTest extends AbstractJMHTestRunner
     }
 
     @Benchmark
-    public int parallel_lazy_streams_gsc()
-    {
-        return this.integersGSC.parallelStream().max(Comparator.<Integer>naturalOrder()).get();
-    }
-
-    @Benchmark
     public int parallel_lazy_reverse_jdk()
     {
         return this.integersJDK.parallelStream().max(Comparator.<Integer>reverseOrder()).get();
     }
 
     @Benchmark
-    public int parallel_lazy_reverse_streams_gsc()
-    {
-        return this.integersGSC.parallelStream().max(Comparator.<Integer>reverseOrder()).get();
-    }
-
-    @Benchmark
     public int parallel_lazy_intstream_jdk()
     {
         return this.integersJDK.parallelStream().mapToInt(Integer::intValue).max().getAsInt();
-    }
-
-    @Benchmark
-    public int parallel_lazy_intstream_streams_gsc()
-    {
-        return this.integersGSC.parallelStream().mapToInt(Integer::intValue).max().getAsInt();
     }
 
     @Benchmark

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Goldman Sachs.
+ * Copyright 2012 Goldman Sachs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,35 +55,5 @@ public enum Primitive
     public boolean isFloatingPoint()
     {
         return this == FLOAT || this == DOUBLE;
-    }
-
-    public boolean isBytePrimitive()
-    {
-        return this == BYTE;
-    }
-
-    public boolean isBooleanPrimitive()
-    {
-        return this == BOOLEAN;
-    }
-
-    public boolean isCharPrimitive()
-    {
-        return this == CHAR;
-    }
-
-    public boolean isShortPrimitive()
-    {
-        return this == SHORT;
-    }
-
-    public boolean isFloatPrimitive()
-    {
-        return this == FLOAT;
-    }
-
-    public boolean isDoublePrimitive()
-    {
-        return this == DOUBLE;
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Goldman Sachs.
+ * Copyright 2014 Goldman Sachs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,16 +48,6 @@ public abstract class Predicates<T>
     public static <T> Predicates<T> adapt(Predicate<T> predicate)
     {
         return new PredicateAdapter<T>(predicate);
-    }
-
-    /**
-     * Allows a Java 8 lambda or method reference to be used in a method taking a predicate without requiring an actual cast.
-     * This method can be used in places where two or more method overloads could apply when used with a lambda or method
-     * reference (e.g. removeIf).
-     */
-    public static <T> Predicate<T> cast(Predicate<T> predicate)
-    {
-        return predicate;
     }
 
     public static <T> Predicate<T> throwing(ThrowingPredicate<T> throwingPredicate)
@@ -1487,12 +1477,12 @@ public abstract class Predicates<T>
         }
     }
 
-    private static final class ThrowingPredicateAdapter<T> extends CheckedPredicate<T>
+    private static class ThrowingPredicateAdapter<T> extends CheckedPredicate<T>
     {
         private static final long serialVersionUID = 1L;
         private final ThrowingPredicate<T> throwingPredicate;
 
-        private ThrowingPredicateAdapter(ThrowingPredicate<T> throwingPredicate)
+        public ThrowingPredicateAdapter(ThrowingPredicate<T> throwingPredicate)
         {
             this.throwingPredicate = throwingPredicate;
         }

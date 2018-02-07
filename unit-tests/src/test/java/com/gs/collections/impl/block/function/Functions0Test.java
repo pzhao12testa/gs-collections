@@ -34,18 +34,6 @@ import org.junit.Test;
 public class Functions0Test
 {
     @Test
-    public void getTrue()
-    {
-        Assert.assertTrue(Functions0.getTrue().value());
-    }
-
-    @Test
-    public void getFalse()
-    {
-        Assert.assertFalse(Functions0.getFalse().value());
-    }
-
-    @Test
     public void throwing()
     {
         Verify.assertThrowsWithCause(
@@ -85,7 +73,6 @@ public class Functions0Test
     @Test
     public void zeroInteger()
     {
-        Assert.assertEquals(Integer.valueOf(0), Functions0.zeroInteger().value());
         Assert.assertEquals(Integer.valueOf(0), Functions0.value(0).value());
     }
 

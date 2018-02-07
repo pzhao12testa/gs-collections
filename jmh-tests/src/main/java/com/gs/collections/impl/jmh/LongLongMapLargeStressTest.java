@@ -22,7 +22,6 @@ import java.util.concurrent.TimeUnit;
 import com.gs.collections.api.list.primitive.MutableLongList;
 import com.gs.collections.api.map.primitive.MutableLongLongMap;
 import com.gs.collections.api.set.primitive.MutableLongSet;
-import com.gs.collections.impl.jmh.runner.AbstractJMHTestRunner;
 import com.gs.collections.impl.list.mutable.primitive.LongArrayList;
 import com.gs.collections.impl.map.mutable.primitive.LongLongHashMap;
 import com.gs.collections.impl.set.mutable.primitive.LongHashSet;
@@ -40,7 +39,7 @@ import org.openjdk.jmh.annotations.State;
 @State(Scope.Thread)
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.SECONDS)
-public class LongLongMapLargeStressTest extends AbstractJMHTestRunner
+public class LongLongMapLargeStressTest
 {
     private static final int LOOP_COUNT = 1;
     private static final int KEY_COUNT = 400_000;
@@ -62,7 +61,13 @@ public class LongLongMapLargeStressTest extends AbstractJMHTestRunner
 
     private int gscIndex(int element)
     {
-        return this.mask(element);
+        long code = element;
+        code ^= code >>> 28;
+        code *= -4254747342703917655L;
+        code ^= code >>> 43;
+        code *= -908430792394475837L;
+        code ^= code >>> 23;
+        return this.mask((int) code);
     }
 
     private int mask(int spread)
@@ -109,12 +114,12 @@ public class LongLongMapLargeStressTest extends AbstractJMHTestRunner
 
     protected long[] getGSCArray(int number, int lower, int upper, Random random)
     {
-        long[] gscCollisions = this.getGSCSequenceCollisions(number, lower, upper).toArray();
+        long[] gscCollisions = this.getGSCCollisions(number, lower, upper).toArray();
         this.shuffle(gscCollisions, random);
         return gscCollisions;
     }
 
-    private MutableLongList getGSCSequenceCollisions(int number, int lower, int upper)
+    private MutableLongList getGSCCollisions(int number, int lower, int upper)
     {
         MutableLongList gscCollidingNumbers = new LongArrayList();
         for (int i = lower; i < upper && gscCollidingNumbers.size() < KEY_COUNT; i++)
@@ -130,12 +135,12 @@ public class LongLongMapLargeStressTest extends AbstractJMHTestRunner
 
     protected long[] getKolobokeArray(int number, int lower, int upper, Random random)
     {
-        long[] kolobokeCollisions = this.getKolobokeSequenceCollisions(number, lower, upper).toArray();
+        long[] kolobokeCollisions = this.getKolobokeCollisions(number, lower, upper).toArray();
         this.shuffle(kolobokeCollisions, random);
         return kolobokeCollisions;
     }
 
-    private MutableLongList getKolobokeSequenceCollisions(int number, int lower, int upper)
+    private MutableLongList getKolobokeCollisions(int number, int lower, int upper)
     {
         MutableLongList kolobokeCollidingNumbers = new LongArrayList();
         for (int i = lower; i < upper && kolobokeCollidingNumbers.size() < KEY_COUNT; i++)
@@ -215,40 +220,6 @@ public class LongLongMapLargeStressTest extends AbstractJMHTestRunner
                 newMap.put(this.gscLongKeysForMap[i], 4);
             }
             if (newMap.size() != KEY_COUNT)
-            {
-                throw new AssertionError("size is " + newMap.size());
-            }
-        }
-    }
-
-    @Benchmark
-    public void gscRemove()
-    {
-        for (int j = 0; j < LOOP_COUNT; j++)
-        {
-            MutableLongLongMap newMap = new LongLongHashMap(this.longLongGsc);
-            for (int i = 0; i < KEY_COUNT; i++)
-            {
-                newMap.remove(this.gscLongKeysForMap[i]);
-            }
-            if (newMap.size() != 0)
-            {
-                throw new AssertionError("size is " + newMap.size());
-            }
-        }
-    }
-
-    @Benchmark
-    public void kolobokeRemove()
-    {
-        for (int j = 0; j < LOOP_COUNT; j++)
-        {
-            LongLongMap newMap = HashLongLongMaps.newMutableMap(this.longLongKoloboke);
-            for (int i = 0; i < KEY_COUNT; i++)
-            {
-                newMap.remove(this.kolobokeLongKeysForMap[i]);
-            }
-            if (newMap.size() != 0)
             {
                 throw new AssertionError("size is " + newMap.size());
             }

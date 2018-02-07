@@ -84,7 +84,13 @@ public final class <name>HashBag extends Abstract<name>Iterable implements Mutab
     public <name>HashBag(<name>HashBag bag)
     {
         this.items = new <name>IntHashMap(bag.sizeDistinct());
-        this.addAll(bag);
+        bag.forEachWithOccurrences(new <name>IntProcedure()
+        {
+            public void value(<type> item, int occurrences)
+            {
+                <name>HashBag.this.addOccurrences(item, occurrences);
+            }
+        });
     }
 
     public static <name>HashBag newBag(int size)
@@ -94,7 +100,9 @@ public final class <name>HashBag extends Abstract<name>Iterable implements Mutab
 
     public static <name>HashBag newBagWith(<type>... source)
     {
-        return new <name>HashBag(source);
+        <name>HashBag result = new <name>HashBag();
+        result.addAll(source);
+        return result;
     }
 
     public static <name>HashBag newBag(<name>Iterable source)
@@ -103,12 +111,21 @@ public final class <name>HashBag extends Abstract<name>Iterable implements Mutab
         {
             return new <name>HashBag((<name>HashBag) source);
         }
+
         return new <name>HashBag(source);
     }
 
     public static <name>HashBag newBag(<name>Bag source)
     {
-        return new <name>HashBag(source);
+        final <name>HashBag result = new <name>HashBag();
+        source.forEachWithOccurrences(new <name>IntProcedure()
+        {
+            public void value(<type> each, int occurrences)
+            {
+                result.addOccurrences(each, occurrences);
+            }
+        });
+        return result;
     }
 
     @Override
@@ -382,15 +399,7 @@ public final class <name>HashBag extends Abstract<name>Iterable implements Mutab
         return true;
     }
 
-    public void forEach(<name>Procedure procedure)
-    {
-        this.each(procedure);
-    }
-
-    /**
-     * @since 7.0.
-     */
-    public void each(final <name>Procedure procedure)
+    public void forEach(final <name>Procedure procedure)
     {
         this.items.forEachKeyValue(new <name>IntProcedure()
         {
@@ -594,40 +603,19 @@ public final class <name>HashBag extends Abstract<name>Iterable implements Mutab
         return this.items.keysView().min();
     }
 
-    <if(primitive.floatingPoint)>public <wideType.(type)> sum()
-{
-    final <wideType.(type)>[] result = {<wideZero.(type)>};
-    final <wideType.(type)>[] compensation = {<wideZero.(type)>};
-    this.forEachWithOccurrences(new <name>IntProcedure()
+    public <wideType.(type)> sum()
     {
-        public void value(<type> each, int occurrences)
+        final <wideType.(type)>[] result = {<wideZero.(type)>};
+        this.forEachWithOccurrences(new <name>IntProcedure()
         {
-            for(int i = 0; i \< occurrences; i++)
+            public void value(<type> each, int occurrences)
             {
-                <wideType.(type)> adjustedValue = (<wideType.(type)>) each - compensation[0];
-                <wideType.(type)> nextSum = result[0] + adjustedValue;
-                compensation[0] = nextSum - result[0] - adjustedValue;
-                result[0] = nextSum;
+                result[0] += (<wideType.(type)>) each * occurrences;
             }
-        }
-    });
-    return result[0];
-}
+        });
+        return result[0];
+    }
 
-    <else>public <wideType.(type)> sum()
-{
-    final <wideType.(type)>[] result = {<wideZero.(type)>};
-    this.forEachWithOccurrences(new <name>IntProcedure()
-    {
-        public void value(<type> each, int occurrences)
-        {
-            result[0] += (<wideType.(type)>) each * occurrences;
-        }
-    });
-    return result[0];
-}
-
-    <endif>
     public <type>[] toArray()
     {
         final <type>[] array = new <type>[this.size()];
@@ -739,15 +727,7 @@ public final class <name>HashBag extends Abstract<name>Iterable implements Mutab
             {
                 throw new IllegalStateException();
             }
-            if (this.occurrences == 0)
-            {
-                this.<type>Iterator.remove();
-                <name>HashBag.this.size--;
-            }
-            else
-            {
-                <name>HashBag.this.remove(this.currentItem);
-            }
+            this.<type>Iterator.remove();
             this.canRemove = false;
         }
     }

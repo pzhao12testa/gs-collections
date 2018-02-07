@@ -19,7 +19,6 @@ package com.gs.collections.impl.jmh.map;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
-import com.gs.collections.impl.jmh.runner.AbstractJMHTestRunner;
 import org.apache.commons.lang.RandomStringUtils;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
@@ -35,7 +34,7 @@ import scala.collection.immutable.Map;
 @State(Scope.Thread)
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.SECONDS)
-public class ScalaImmutableMapGetTest extends AbstractJMHTestRunner
+public class ScalaImmutableMapGetTest
 {
     private static final int RANDOM_COUNT = 9;
 

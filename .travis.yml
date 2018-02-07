@@ -1,9 +1,15 @@
-language: java
-jdk:
-  - oraclejdk8
-
 before_install:
-  - cat /etc/mavenrc
-  - sudo rm /etc/mavenrc
-  - export MAVEN_OPTS="-Dmaven.repo.local=$HOME/.m2/repository -Xmx2g -Dorg.slf4j.simpleLogger.showDateTime=true -Dorg.slf4j.simpleLogger.dateTimeFormat=HH:mm:ss:SSS"
-
+- cat /etc/mavenrc
+- sudo rm /etc/mavenrc
+- export MAVEN_OPTS="-Dmaven.repo.local=$HOME/.m2/repository -Xmx2g -Dorg.slf4j.simpleLogger.showDateTime=true
+  -Dorg.slf4j.simpleLogger.dateTimeFormat=HH:mm:ss:SSS"
+jdk:
+- oraclejdk8
+language: java
+script:
+- touch /tmp/NOW
+- echo GIBSTUDYSTART $(date)
+- mvn test -B
+- echo GIBSTUDYEND $(date)
+- cd $TRAVIS_BUILD_DIR
+- echo TESTNUM $(find . -name TEST-*.xml -newer /tmp/NOW | wc -l)

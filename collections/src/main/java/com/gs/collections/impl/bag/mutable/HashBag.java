@@ -22,12 +22,39 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 
-import com.gs.collections.api.RichIterable;
+import com.gs.collections.api.LazyIterable;
+import com.gs.collections.api.annotation.Beta;
 import com.gs.collections.api.bag.Bag;
+import com.gs.collections.api.bag.ImmutableBag;
 import com.gs.collections.api.bag.MutableBag;
+import com.gs.collections.api.bag.ParallelUnsortedBag;
+import com.gs.collections.api.bag.primitive.MutableBooleanBag;
+import com.gs.collections.api.bag.primitive.MutableByteBag;
+import com.gs.collections.api.bag.primitive.MutableCharBag;
+import com.gs.collections.api.bag.primitive.MutableDoubleBag;
+import com.gs.collections.api.bag.primitive.MutableFloatBag;
+import com.gs.collections.api.bag.primitive.MutableIntBag;
+import com.gs.collections.api.bag.primitive.MutableLongBag;
+import com.gs.collections.api.bag.primitive.MutableShortBag;
+import com.gs.collections.api.bag.sorted.MutableSortedBag;
 import com.gs.collections.api.block.function.Function;
+import com.gs.collections.api.block.function.Function0;
+import com.gs.collections.api.block.function.Function2;
+import com.gs.collections.api.block.function.primitive.BooleanFunction;
+import com.gs.collections.api.block.function.primitive.ByteFunction;
+import com.gs.collections.api.block.function.primitive.CharFunction;
+import com.gs.collections.api.block.function.primitive.DoubleFunction;
+import com.gs.collections.api.block.function.primitive.FloatFunction;
+import com.gs.collections.api.block.function.primitive.IntFunction;
+import com.gs.collections.api.block.function.primitive.LongFunction;
+import com.gs.collections.api.block.function.primitive.ShortFunction;
 import com.gs.collections.api.block.predicate.Predicate;
 import com.gs.collections.api.block.predicate.Predicate2;
 import com.gs.collections.api.block.predicate.primitive.IntPredicate;
@@ -37,12 +64,40 @@ import com.gs.collections.api.block.procedure.Procedure2;
 import com.gs.collections.api.block.procedure.primitive.ObjectIntProcedure;
 import com.gs.collections.api.map.MutableMap;
 import com.gs.collections.api.map.primitive.MutableObjectIntMap;
+import com.gs.collections.api.ordered.OrderedIterable;
+import com.gs.collections.api.partition.bag.PartitionMutableBag;
+import com.gs.collections.api.set.MutableSet;
+import com.gs.collections.api.tuple.Pair;
 import com.gs.collections.api.tuple.primitive.ObjectIntPair;
 import com.gs.collections.impl.Counter;
+import com.gs.collections.impl.bag.mutable.primitive.BooleanHashBag;
+import com.gs.collections.impl.bag.mutable.primitive.ByteHashBag;
+import com.gs.collections.impl.bag.mutable.primitive.CharHashBag;
+import com.gs.collections.impl.bag.mutable.primitive.DoubleHashBag;
+import com.gs.collections.impl.bag.mutable.primitive.FloatHashBag;
+import com.gs.collections.impl.bag.mutable.primitive.IntHashBag;
+import com.gs.collections.impl.bag.mutable.primitive.LongHashBag;
+import com.gs.collections.impl.bag.mutable.primitive.ShortHashBag;
+import com.gs.collections.impl.bag.sorted.mutable.TreeBag;
+import com.gs.collections.impl.block.factory.Comparators;
+import com.gs.collections.impl.block.factory.Predicates2;
 import com.gs.collections.impl.block.factory.primitive.IntToIntFunctions;
+import com.gs.collections.impl.factory.Bags;
+import com.gs.collections.impl.lazy.AbstractLazyIterable;
+import com.gs.collections.impl.lazy.parallel.AbstractBatch;
+import com.gs.collections.impl.lazy.parallel.AbstractParallelIterable;
+import com.gs.collections.impl.lazy.parallel.bag.AbstractParallelUnsortedBag;
+import com.gs.collections.impl.lazy.parallel.bag.CollectUnsortedBagBatch;
+import com.gs.collections.impl.lazy.parallel.bag.FlatCollectUnsortedBagBatch;
+import com.gs.collections.impl.lazy.parallel.bag.NonParallelUnsortedBag;
+import com.gs.collections.impl.lazy.parallel.bag.RootUnsortedBagBatch;
+import com.gs.collections.impl.lazy.parallel.bag.SelectUnsortedBagBatch;
+import com.gs.collections.impl.lazy.parallel.bag.UnsortedBagBatch;
 import com.gs.collections.impl.map.mutable.UnifiedMap;
 import com.gs.collections.impl.map.mutable.primitive.ObjectIntHashMap;
 import com.gs.collections.impl.multimap.bag.HashBagMultimap;
+import com.gs.collections.impl.partition.bag.PartitionHashBag;
+import com.gs.collections.impl.set.mutable.UnifiedSet;
 import com.gs.collections.impl.utility.ArrayIterate;
 import com.gs.collections.impl.utility.Iterate;
 
@@ -54,7 +109,7 @@ import com.gs.collections.impl.utility.Iterate;
  */
 public class HashBag<T>
         extends AbstractMutableBag<T>
-        implements Externalizable
+        implements Externalizable, MutableBag<T>
 {
     private static final long serialVersionUID = 1L;
 
@@ -89,17 +144,19 @@ public class HashBag<T>
 
     public static <E> HashBag<E> newBag(Bag<? extends E> source)
     {
-        HashBag<E> result = HashBag.newBag(source.sizeDistinct());
-        result.addAllBag(source);
+        final HashBag<E> result = HashBag.newBag();
+        source.forEachWithOccurrences(new ObjectIntProcedure<E>()
+        {
+            public void value(E each, int occurrences)
+            {
+                result.addOccurrences(each, occurrences);
+            }
+        });
         return result;
     }
 
     public static <E> HashBag<E> newBag(Iterable<? extends E> source)
     {
-        if (source instanceof Bag)
-        {
-            return HashBag.newBag((Bag<E>) source);
-        }
         return HashBag.newBagWith((E[]) Iterate.toArray(source));
     }
 
@@ -108,28 +165,6 @@ public class HashBag<T>
         HashBag<E> result = HashBag.newBag();
         ArrayIterate.addAllTo(elements, result);
         return result;
-    }
-
-    @Override
-    public boolean addAll(Collection<? extends T> source)
-    {
-        if (source instanceof Bag)
-        {
-            return this.addAllBag((Bag<T>) source);
-        }
-        return super.addAll(source);
-    }
-
-    private boolean addAllBag(Bag<? extends T> source)
-    {
-        source.forEachWithOccurrences(new ObjectIntProcedure<T>()
-        {
-            public void value(T each, int occurrences)
-            {
-                HashBag.this.addOccurrences(each, occurrences);
-            }
-        });
-        return source.notEmpty();
     }
 
     public void addOccurrences(T item, int occurrences)
@@ -171,6 +206,11 @@ public class HashBag<T>
         });
     }
 
+    public int sizeDistinct()
+    {
+        return this.items.size();
+    }
+
     @Override
     public int hashCode()
     {
@@ -183,17 +223,6 @@ public class HashBag<T>
             }
         });
         return counter.getCount();
-    }
-
-    @Override
-    protected RichIterable<T> getKeysView()
-    {
-        return this.items.keysView();
-    }
-
-    public int sizeDistinct()
-    {
-        return this.items.size();
     }
 
     public int occurrencesOf(Object item)
@@ -231,6 +260,12 @@ public class HashBag<T>
         return map;
     }
 
+    public String toStringOfItemToCount()
+    {
+        return this.items.toString();
+    }
+
+    @Override
     public boolean remove(Object item)
     {
         int newValue = this.items.updateValue((T) item, 0, IntToIntFunctions.decrement());
@@ -268,6 +303,12 @@ public class HashBag<T>
         this.items = new ObjectIntHashMap<T>();
         ((ObjectIntHashMap<T>) this.items).readExternal(in);
         this.size = (int) this.items.sum();
+    }
+
+    public MutableBag<T> tap(Procedure<? super T> procedure)
+    {
+        this.forEach(procedure);
+        return this;
     }
 
     public void each(final Procedure<? super T> procedure)
@@ -384,12 +425,31 @@ public class HashBag<T>
         return HashBag.newBag();
     }
 
+    public <P, V> MutableBag<V> collectWith(
+            final Function2<? super T, ? super P, ? extends V> function,
+            final P parameter)
+    {
+        final HashBag<V> result = HashBag.newBag(this.items.size());
+        this.forEachWithOccurrences(new ObjectIntProcedure<T>()
+        {
+            public void value(T each, int occurrences)
+            {
+                result.addOccurrences(function.value(each, parameter), occurrences);
+            }
+        });
+        return result;
+    }
+
     public HashBag<T> with(T element)
     {
         this.add(element);
         return this;
     }
 
+    public SynchronizedBag<T> asSynchronized()
+    {
+        return new SynchronizedBag<T>(this);
+    }
 
     public HashBag<T> withAll(Iterable<? extends T> iterable)
     {
@@ -403,9 +463,41 @@ public class HashBag<T>
         return this;
     }
 
-    public boolean removeIf(Predicate<? super T> predicate)
+    public <P> MutableBag<T> selectWith(final Predicate2<? super T, ? super P> predicate, final P parameter)
     {
-        boolean changed = false;
+        final MutableBag<T> result = HashBag.newBag();
+        this.forEachWithOccurrences(new ObjectIntProcedure<T>()
+        {
+            public void value(T each, int occurrences)
+            {
+                if (predicate.accept(each, parameter))
+                {
+                    result.addOccurrences(each, occurrences);
+                }
+            }
+        });
+        return result;
+    }
+
+    public <P> MutableBag<T> rejectWith(final Predicate2<? super T, ? super P> predicate, final P parameter)
+    {
+        final MutableBag<T> result = HashBag.newBag();
+        this.forEachWithOccurrences(new ObjectIntProcedure<T>()
+        {
+            public void value(T each, int index)
+            {
+                if (!predicate.accept(each, parameter))
+                {
+                    result.addOccurrences(each, index);
+                }
+            }
+        });
+        return result;
+    }
+
+    @Override
+    public void removeIf(Predicate<? super T> predicate)
+    {
         for (Iterator<T> iterator = this.items.keySet().iterator(); iterator.hasNext(); )
         {
             T key = iterator.next();
@@ -413,15 +505,13 @@ public class HashBag<T>
             {
                 this.size -= this.items.get(key);
                 iterator.remove();
-                changed = true;
             }
         }
-        return changed;
     }
 
-    public <P> boolean removeIfWith(Predicate2<? super T, ? super P> predicate, P parameter)
+    @Override
+    public <P> void removeIfWith(Predicate2<? super T, ? super P> predicate, P parameter)
     {
-        boolean changed = false;
         for (Iterator<T> iterator = this.items.keySet().iterator(); iterator.hasNext(); )
         {
             T key = iterator.next();
@@ -429,36 +519,52 @@ public class HashBag<T>
             {
                 this.size -= this.items.get(key);
                 iterator.remove();
-                changed = true;
             }
         }
-        return changed;
     }
 
+    @Override
+    public <P> T detectWithIfNone(
+            final Predicate2<? super T, ? super P> predicate,
+            final P parameter,
+            Function0<? extends T> function)
+    {
+        return this.items.keysView().detectIfNone(new Predicate<T>()
+        {
+            public boolean accept(T each)
+            {
+                return predicate.accept(each, parameter);
+            }
+        }, function);
+    }
 
+    public UnmodifiableBag<T> asUnmodifiable()
+    {
+        return UnmodifiableBag.of(this);
+    }
+
+    public ImmutableBag<T> toImmutable()
+    {
+        return Bags.immutable.withAll(this);
+    }
+
+    @Override
     public boolean removeAllIterable(Iterable<?> iterable)
     {
         int oldSize = this.size;
-        if (iterable instanceof Bag)
+        for (Object each : iterable)
         {
-            Bag<?> source = (Bag<?>) iterable;
-            source.forEachWithOccurrences(new ObjectIntProcedure<Object>()
-            {
-                public void value(Object each, int parameter)
-                {
-                    int removed = HashBag.this.items.removeKeyIfAbsent((T) each, 0);
-                    HashBag.this.size -= removed;
-                }
-            });
+            int removed = this.items.removeKeyIfAbsent((T) each, 0);
+            this.size -= removed;
         }
-        else
-        {
-            for (Object each : iterable)
-            {
-                int removed = this.items.removeKeyIfAbsent((T) each, 0);
-                this.size -= removed;
-            }
-        }
+        return this.size != oldSize;
+    }
+
+    @Override
+    public boolean retainAllIterable(Iterable<?> iterable)
+    {
+        int oldSize = this.size;
+        this.removeIfWith(Predicates2.notIn(), UnifiedSet.newSet(iterable));
         return this.size != oldSize;
     }
 
@@ -473,14 +579,371 @@ public class HashBag<T>
         return this.items.containsKey(o);
     }
 
+    public MutableBag<T> select(final Predicate<? super T> predicate)
+    {
+        final MutableBag<T> result = HashBag.newBag();
+        this.forEachWithOccurrences(new ObjectIntProcedure<T>()
+        {
+            public void value(T each, int occurrences)
+            {
+                if (predicate.accept(each))
+                {
+                    result.addOccurrences(each, occurrences);
+                }
+            }
+        });
+        return result;
+    }
+
+    public PartitionMutableBag<T> partition(final Predicate<? super T> predicate)
+    {
+        final PartitionMutableBag<T> result = new PartitionHashBag<T>();
+        this.forEachWithOccurrences(new ObjectIntProcedure<T>()
+        {
+            public void value(T each, int index)
+            {
+                MutableBag<T> bucket = predicate.accept(each) ? result.getSelected() : result.getRejected();
+                bucket.addOccurrences(each, index);
+            }
+        });
+        return result;
+    }
+
+    public <P> PartitionMutableBag<T> partitionWith(final Predicate2<? super T, ? super P> predicate, final P parameter)
+    {
+        final PartitionMutableBag<T> result = new PartitionHashBag<T>();
+        this.forEachWithOccurrences(new ObjectIntProcedure<T>()
+        {
+            public void value(T each, int index)
+            {
+                MutableBag<T> bucket = predicate.accept(each, parameter) ? result.getSelected() : result.getRejected();
+                bucket.addOccurrences(each, index);
+            }
+        });
+        return result;
+    }
+
+    public <S> MutableBag<S> selectInstancesOf(final Class<S> clazz)
+    {
+        final MutableBag<S> result = HashBag.newBag();
+        this.forEachWithOccurrences(new ObjectIntProcedure<T>()
+        {
+            public void value(T each, int occurrences)
+            {
+                if (clazz.isInstance(each))
+                {
+                    result.addOccurrences((S) each, occurrences);
+                }
+            }
+        });
+        return result;
+    }
+
+    public MutableBooleanBag collectBoolean(BooleanFunction<? super T> booleanFunction)
+    {
+        return this.collectBoolean(booleanFunction, new BooleanHashBag());
+    }
+
+    public MutableByteBag collectByte(ByteFunction<? super T> byteFunction)
+    {
+        return this.collectByte(byteFunction, new ByteHashBag());
+    }
+
+    public MutableCharBag collectChar(CharFunction<? super T> charFunction)
+    {
+        return this.collectChar(charFunction, new CharHashBag());
+    }
+
+    public MutableDoubleBag collectDouble(DoubleFunction<? super T> doubleFunction)
+    {
+        return this.collectDouble(doubleFunction, new DoubleHashBag());
+    }
+
+    public T getFirst()
+    {
+        return this.items.keysView().getFirst();
+    }
+
     public <V> HashBagMultimap<V, T> groupBy(Function<? super T, ? extends V> function)
     {
         return this.groupBy(function, HashBagMultimap.<V, T>newMultimap());
     }
 
+    @Override
+    public <V> MutableMap<V, T> groupByUniqueKey(Function<? super T, ? extends V> function)
+    {
+        return this.groupByUniqueKey(function, UnifiedMap.<V, T>newMap());
+    }
+
+    /**
+     * @deprecated in 6.0. Use {@link OrderedIterable#zipWithIndex()} instead.
+     */
+    @Deprecated
+    public MutableSet<Pair<T, Integer>> zipWithIndex()
+    {
+        return this.zipWithIndex(UnifiedSet.<Pair<T, Integer>>newSet());
+    }
+
+    public T getLast()
+    {
+        return this.items.keysView().getLast();
+    }
+
+    public MutableBag<T> reject(final Predicate<? super T> predicate)
+    {
+        final MutableBag<T> result = HashBag.newBag();
+        this.forEachWithOccurrences(new ObjectIntProcedure<T>()
+        {
+            public void value(T each, int index)
+            {
+                if (!predicate.accept(each))
+                {
+                    result.addOccurrences(each, index);
+                }
+            }
+        });
+        return result;
+    }
+
+    public <V> MutableBag<V> collect(final Function<? super T, ? extends V> function)
+    {
+        final HashBag<V> result = HashBag.newBag(this.items.size());
+        this.forEachWithOccurrences(new ObjectIntProcedure<T>()
+        {
+            public void value(T each, int occurrences)
+            {
+                result.addOccurrences(function.valueOf(each), occurrences);
+            }
+        });
+        return result;
+    }
+
+    @Override
+    public <P, V, R extends Collection<V>> R collectWith(final Function2<? super T, ? super P, ? extends V> function, final P parameter, final R target)
+    {
+        if (target instanceof MutableBag<?>)
+        {
+            final MutableBag<V> targetBag = (MutableBag<V>) target;
+
+            this.forEachWithOccurrences(new ObjectIntProcedure<T>()
+            {
+                public void value(T each, int occurrences)
+                {
+                    targetBag.addOccurrences(function.value(each, parameter), occurrences);
+                }
+            });
+        }
+        else
+        {
+            this.forEachWithOccurrences(new ObjectIntProcedure<T>()
+            {
+                public void value(T each, int occurrences)
+                {
+                    V value = function.value(each, parameter);
+                    for (int i = 0; i < occurrences; i++)
+                    {
+                        target.add(value);
+                    }
+                }
+            });
+        }
+        return target;
+    }
+
+    public MutableFloatBag collectFloat(FloatFunction<? super T> floatFunction)
+    {
+        return this.collectFloat(floatFunction, new FloatHashBag());
+    }
+
+    public MutableIntBag collectInt(IntFunction<? super T> intFunction)
+    {
+        return this.collectInt(intFunction, new IntHashBag());
+    }
+
+    public MutableLongBag collectLong(LongFunction<? super T> longFunction)
+    {
+        return this.collectLong(longFunction, new LongHashBag());
+    }
+
+    public MutableShortBag collectShort(ShortFunction<? super T> shortFunction)
+    {
+        return this.collectShort(shortFunction, new ShortHashBag());
+    }
+
+    public <V> MutableBag<V> collectIf(
+            final Predicate<? super T> predicate,
+            final Function<? super T, ? extends V> function)
+    {
+        final MutableBag<V> result = HashBag.newBag();
+        this.forEachWithOccurrences(new ObjectIntProcedure<T>()
+        {
+            public void value(T each, int occurrences)
+            {
+                if (predicate.accept(each))
+                {
+                    result.addOccurrences(function.valueOf(each), occurrences);
+                }
+            }
+        });
+        return result;
+    }
+
+    public <V> MutableBag<V> flatCollect(final Function<? super T, ? extends Iterable<V>> function)
+    {
+        final MutableBag<V> result = HashBag.newBag();
+        this.forEachWithOccurrences(new ObjectIntProcedure<T>()
+        {
+            public void value(T each, final int occurrences)
+            {
+                Iterable<V> values = function.valueOf(each);
+                Iterate.forEach(values, new Procedure<V>()
+                {
+                    public void value(V each)
+                    {
+                        result.addOccurrences(each, occurrences);
+                    }
+                });
+            }
+        });
+        return result;
+    }
+
     public <V> HashBagMultimap<V, T> groupByEach(Function<? super T, ? extends Iterable<V>> function)
     {
         return this.groupByEach(function, HashBagMultimap.<V, T>newMultimap());
+    }
+
+    /**
+     * @deprecated in 6.0. Use {@link OrderedIterable#zip(Iterable)} instead.
+     */
+    @Deprecated
+    public <S> MutableBag<Pair<T, S>> zip(Iterable<S> that)
+    {
+        return this.zip(that, HashBag.<Pair<T, S>>newBag());
+    }
+
+    @Override
+    public T detect(Predicate<? super T> predicate)
+    {
+        return this.items.keysView().detect(predicate);
+    }
+
+    @Override
+    public <P> T detectWith(Predicate2<? super T, ? super P> predicate, P parameter)
+    {
+        return this.items.keysView().detectWith(predicate, parameter);
+    }
+
+    @Override
+    public T detectIfNone(Predicate<? super T> predicate, Function0<? extends T> function)
+    {
+        return this.items.keysView().detectIfNone(predicate, function);
+    }
+
+    @Override
+    public boolean anySatisfy(Predicate<? super T> predicate)
+    {
+        return this.items.keysView().anySatisfy(predicate);
+    }
+
+    @Override
+    public <P> boolean anySatisfyWith(Predicate2<? super T, ? super P> predicate, P parameter)
+    {
+        return this.items.keysView().anySatisfyWith(predicate, parameter);
+    }
+
+    @Override
+    public boolean allSatisfy(Predicate<? super T> predicate)
+    {
+        return this.items.keysView().allSatisfy(predicate);
+    }
+
+    @Override
+    public <P> boolean allSatisfyWith(Predicate2<? super T, ? super P> predicate, P parameter)
+    {
+        return this.items.keysView().allSatisfyWith(predicate, parameter);
+    }
+
+    @Override
+    public boolean noneSatisfy(Predicate<? super T> predicate)
+    {
+        return this.items.keysView().noneSatisfy(predicate);
+    }
+
+    @Override
+    public <P> boolean noneSatisfyWith(Predicate2<? super T, ? super P> predicate, P parameter)
+    {
+        return this.items.keysView().noneSatisfyWith(predicate, parameter);
+    }
+
+    @Override
+    public MutableSortedBag<T> toSortedBag()
+    {
+        final TreeBag<T> treeBag = TreeBag.newBag();
+        this.forEachWithOccurrences(new ObjectIntProcedure<T>()
+        {
+            public void value(T item, int occurrences)
+            {
+                treeBag.addOccurrences(item, occurrences);
+            }
+        });
+        return treeBag;
+    }
+
+    @Override
+    public MutableSortedBag<T> toSortedBag(Comparator<? super T> comparator)
+    {
+        final TreeBag<T> treeBag = TreeBag.newBag(comparator);
+        this.forEachWithOccurrences(new ObjectIntProcedure<T>()
+        {
+            public void value(T item, int occurrences)
+            {
+                treeBag.addOccurrences(item, occurrences);
+            }
+        });
+        return treeBag;
+    }
+
+    @Override
+    public <V extends Comparable<? super V>> MutableSortedBag<T> toSortedBagBy(Function<? super T, ? extends V> function)
+    {
+        return this.toSortedBag(Comparators.byFunction(function));
+    }
+
+    @Override
+    public T min(Comparator<? super T> comparator)
+    {
+        return this.items.keysView().min(comparator);
+    }
+
+    @Override
+    public T max(Comparator<? super T> comparator)
+    {
+        return this.items.keysView().max(comparator);
+    }
+
+    @Override
+    public T min()
+    {
+        return this.items.keysView().min();
+    }
+
+    @Override
+    public T max()
+    {
+        return this.items.keysView().max();
+    }
+
+    @Override
+    public <V extends Comparable<? super V>> T minBy(Function<? super T, ? extends V> function)
+    {
+        return this.items.keysView().minBy(function);
+    }
+
+    @Override
+    public <V extends Comparable<? super V>> T maxBy(Function<? super T, ? extends V> function)
+    {
+        return this.items.keysView().maxBy(function);
     }
 
     public HashBag<T> with(T... elements)
@@ -496,6 +959,7 @@ public class HashBag<T>
         return this;
     }
 
+    @Override
     public boolean add(T item)
     {
         this.items.updateValue(item, 0, IntToIntFunctions.increment());
@@ -513,45 +977,264 @@ public class HashBag<T>
 
     private class InternalIterator implements Iterator<T>
     {
-        private final Iterator<T> iterator = HashBag.this.items.keySet().iterator();
-
-        private T currentItem;
-        private int occurrences;
-        private boolean canRemove;
+        private int position;
+        private boolean isCurrentKeySet;
+        private int currentKeyPosition;
+        private int currentKeyOccurrences;
+        private Iterator<ObjectIntPair<T>> keyValueIterator = HashBag.this.items.keyValuesView().iterator();
+        private ObjectIntPair<T> currentKeyValue;
 
         public boolean hasNext()
         {
-            return this.occurrences > 0 || this.iterator.hasNext();
+            return this.position != HashBag.this.size;
         }
 
         public T next()
         {
-            if (this.occurrences == 0)
+            if (!this.hasNext())
             {
-                this.currentItem = this.iterator.next();
-                this.occurrences = HashBag.this.occurrencesOf(this.currentItem);
+                throw new NoSuchElementException();
             }
-            this.occurrences--;
-            this.canRemove = true;
-            return this.currentItem;
+            this.isCurrentKeySet = true;
+            if (this.currentKeyPosition < this.currentKeyOccurrences)
+            {
+                this.currentKeyPosition++;
+                this.position++;
+                return this.currentKeyValue.getOne();
+            }
+            this.currentKeyValue = this.keyValueIterator.next();
+            this.currentKeyPosition = 1;
+            this.currentKeyOccurrences = this.currentKeyValue.getTwo();
+            this.position++;
+            return this.currentKeyValue.getOne();
         }
 
         public void remove()
         {
-            if (!this.canRemove)
+            if (!this.isCurrentKeySet)
             {
                 throw new IllegalStateException();
             }
-            if (this.occurrences == 0)
+            this.isCurrentKeySet = false;
+            this.position--;
+
+            HashBag.this.remove(this.currentKeyValue.getOne());
+            this.keyValueIterator = HashBag.this.items.keyValuesView().iterator();
+            this.currentKeyOccurrences--;
+            this.currentKeyPosition--;
+        }
+    }
+
+    @Beta
+    public ParallelUnsortedBag<T> asParallel(ExecutorService executorService, int batchSize)
+    {
+        if (executorService == null)
+        {
+            throw new NullPointerException();
+        }
+        if (batchSize < 1)
+        {
+            throw new IllegalArgumentException();
+        }
+        return new NonParallelUnsortedBag<T>(this);
+    }
+
+    private final class HashUnsortedBagBatch extends AbstractBatch<T> implements UnsortedBagBatch<T>
+    {
+        private final int chunkStartIndex;
+        private final int chunkEndIndex;
+
+        private HashUnsortedBagBatch(int chunkStartIndex, int chunkEndIndex)
+        {
+            this.chunkStartIndex = chunkStartIndex;
+            this.chunkEndIndex = chunkEndIndex;
+        }
+
+        public void forEach(Procedure<? super T> procedure)
+        {
+            throw new UnsupportedOperationException("not implemented yet");
+            /*
+            for (int i = this.chunkStartIndex; i < this.chunkEndIndex; i++)
             {
-                this.iterator.remove();
-                HashBag.this.size--;
+                if (ObjectIntHashMap.isNonSentinel(HashBag.this.items.keys[i]))
+                {
+                    T each = HashBag.this.items.toNonSentinel(HashBag.this.items.keys[i]);
+                    int occurrences = HashBag.this.items.values[i];
+                    for (int j = 0; j < occurrences; j++)
+                    {
+                        procedure.value(each);
+                    }
+                }
             }
-            else
+            */
+        }
+
+        public void forEachWithOccurrences(ObjectIntProcedure<? super T> procedure)
+        {
+            throw new UnsupportedOperationException("not implemented yet");
+            /*
+            for (int i = this.chunkStartIndex; i < this.chunkEndIndex; i++)
             {
-                HashBag.this.remove(this.currentItem);
+                if (ObjectIntHashMap.isNonSentinel(HashBag.this.items.keys[i]))
+                {
+                    T each = HashBag.this.items.toNonSentinel(HashBag.this.items.keys[i]);
+                    int occurrences = HashBag.this.items.values[i];
+                    procedure.value(each, occurrences);
+                }
             }
-            this.canRemove = false;
+            */
+        }
+
+        public boolean anySatisfy(Predicate<? super T> predicate)
+        {
+            throw new UnsupportedOperationException("not implemented yet");
+        }
+
+        public boolean allSatisfy(Predicate<? super T> predicate)
+        {
+            throw new UnsupportedOperationException("not implemented yet");
+        }
+
+        public T detect(Predicate<? super T> predicate)
+        {
+            throw new UnsupportedOperationException("not implemented yet");
+        }
+
+        public UnsortedBagBatch<T> select(Predicate<? super T> predicate)
+        {
+            return new SelectUnsortedBagBatch<T>(this, predicate);
+        }
+
+        public <V> UnsortedBagBatch<V> collect(Function<? super T, ? extends V> function)
+        {
+            return new CollectUnsortedBagBatch<T, V>(this, function);
+        }
+
+        public <V> UnsortedBagBatch<V> flatCollect(Function<? super T, ? extends Iterable<V>> function)
+        {
+            return new FlatCollectUnsortedBagBatch<T, V>(this, function);
+        }
+    }
+
+    private final class HashBagParallelIterable extends AbstractParallelUnsortedBag<T, RootUnsortedBagBatch<T>>
+    {
+        private final ExecutorService executorService;
+        private final int batchSize;
+
+        private HashBagParallelIterable(ExecutorService executorService, int batchSize)
+        {
+            this.executorService = executorService;
+            this.batchSize = batchSize;
+        }
+
+        @Override
+        public ExecutorService getExecutorService()
+        {
+            return this.executorService;
+        }
+
+        @Override
+        public int getBatchSize()
+        {
+            return this.batchSize;
+        }
+
+        @Override
+        public LazyIterable<RootUnsortedBagBatch<T>> split()
+        {
+            return new HashBagParallelBatchLazyIterable();
+        }
+
+        public void forEach(Procedure<? super T> procedure)
+        {
+            AbstractParallelIterable.forEach(this, procedure);
+        }
+
+        public boolean anySatisfy(Predicate<? super T> predicate)
+        {
+            return AbstractParallelIterable.anySatisfy(this, predicate);
+        }
+
+        public boolean allSatisfy(Predicate<? super T> predicate)
+        {
+            return AbstractParallelIterable.allSatisfy(this, predicate);
+        }
+
+        public void forEachWithOccurrences(final ObjectIntProcedure<? super T> procedure)
+        {
+            LazyIterable<RootUnsortedBagBatch<T>> chunks = this.split();
+            LazyIterable<Callable<Void>> callables = chunks.collect(new Function<UnsortedBagBatch<T>, Callable<Void>>()
+            {
+                public Callable<Void> valueOf(final UnsortedBagBatch<T> chunk)
+                {
+                    return new Callable<Void>()
+                    {
+                        public Void call()
+                        {
+                            chunk.forEachWithOccurrences(procedure);
+                            return null;
+                        }
+                    };
+                }
+            });
+            try
+            {
+                this.executorService.invokeAll(callables.toList(), Integer.MAX_VALUE, TimeUnit.DAYS);
+            }
+            catch (InterruptedException e)
+            {
+                Thread.currentThread().interrupt();
+                throw new RuntimeException(e);
+            }
+        }
+
+        public T detect(Predicate<? super T> predicate)
+        {
+            return AbstractParallelIterable.detect(this, predicate);
+        }
+
+        private class HashBagParallelBatchIterator implements Iterator<RootUnsortedBagBatch<T>>
+        {
+            protected int chunkIndex;
+
+            public boolean hasNext()
+            {
+                return this.chunkIndex * HashBagParallelIterable.this.batchSize < HashBag.this.items.size();
+            }
+
+            public RootUnsortedBagBatch<T> next()
+            {
+                throw new UnsupportedOperationException("not implemented yet");
+                /*
+                int chunkStartIndex = this.chunkIndex * HashBagParallelIterable.this.batchSize;
+                int chunkEndIndex = (this.chunkIndex + 1) * HashBagParallelIterable.this.batchSize;
+                int truncatedChunkEndIndex = Math.min(chunkEndIndex, HashBag.this.items.keys.length);
+                this.chunkIndex++;
+                return new HashBagBatch(chunkStartIndex, truncatedChunkEndIndex);
+                */
+            }
+
+            public void remove()
+            {
+                throw new UnsupportedOperationException("cannot remove from a ParallelIterable");
+            }
+        }
+
+        private class HashBagParallelBatchLazyIterable
+                extends AbstractLazyIterable<RootUnsortedBagBatch<T>>
+        {
+            public void each(Procedure<? super RootUnsortedBagBatch<T>> procedure)
+            {
+                for (RootUnsortedBagBatch<T> chunk : this)
+                {
+                    procedure.value(chunk);
+                }
+            }
+
+            public Iterator<RootUnsortedBagBatch<T>> iterator()
+            {
+                return new HashBagParallelBatchIterator();
+            }
         }
     }
 }

@@ -50,10 +50,7 @@ public class Select<name>Iterable
         return new Select<name>Iterator(this.delegate, this.predicate);
     }
 
-    /**
-     * @since 7.0.
-     */
-    public void each(<name>Procedure procedure)
+    public void forEach(<name>Procedure procedure)
     {
         this.delegate.forEach(new If<name>Procedure(procedure));
     }

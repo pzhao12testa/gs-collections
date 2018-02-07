@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Goldman Sachs.
+ * Copyright 2014 Goldman Sachs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,24 +32,25 @@ import com.gs.collections.api.multimap.list.MutableListMultimap;
 import com.gs.collections.impl.block.factory.Comparators;
 import com.gs.collections.impl.block.factory.Procedures;
 import com.gs.collections.impl.forkjoin.FJIterate;
-import com.gs.collections.impl.jmh.runner.AbstractJMHTestRunner;
 import com.gs.collections.impl.list.mutable.FastList;
 import com.gs.collections.impl.parallel.ParallelIterate;
 import org.apache.commons.lang.RandomStringUtils;
 import org.junit.Assert;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
+import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.OutputTimeUnit;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
+import org.openjdk.jmh.annotations.Warmup;
 
 @State(Scope.Thread)
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.SECONDS)
-public class AnagramListTest extends AbstractJMHTestRunner
+public class AnagramListTest
 {
     private static final int SIZE = 1_000_000;
 
@@ -72,6 +73,8 @@ public class AnagramListTest extends AbstractJMHTestRunner
         this.executorService.awaitTermination(1L, TimeUnit.SECONDS);
     }
 
+    @Warmup(iterations = 20)
+    @Measurement(iterations = 10)
     @Benchmark
     public void serial_eager_gsc()
     {
@@ -122,35 +125,9 @@ public class AnagramListTest extends AbstractJMHTestRunner
     }
 
     @Benchmark
-    public void serial_lazy_streams_gsc()
-    {
-        Map<Alphagram, List<String>> groupBy = this.gscWords.stream().collect(Collectors.groupingBy(Alphagram::new));
-        groupBy.entrySet()
-                .stream()
-                .map(Map.Entry::getValue)
-                .filter(list -> list.size() >= SIZE_THRESHOLD)
-                .sorted(Comparator.<List<String>>comparingInt(List::size).reversed())
-                .map(list -> list.size() + ": " + list)
-                .forEach(e -> Assert.assertFalse(e.isEmpty()));
-    }
-
-    @Benchmark
     public void parallel_lazy_jdk()
     {
         Map<Alphagram, List<String>> groupBy = this.jdkWords.parallelStream().collect(Collectors.groupingBy(Alphagram::new));
-        groupBy.entrySet()
-                .parallelStream()
-                .map(Map.Entry::getValue)
-                .filter(list -> list.size() >= SIZE_THRESHOLD)
-                .sorted(Comparator.<List<String>>comparingInt(List::size).reversed())
-                .map(list -> list.size() + ": " + list)
-                .forEach(e -> Assert.assertFalse(e.isEmpty()));
-    }
-
-    @Benchmark
-    public void parallel_lazy_streams_gsc()
-    {
-        Map<Alphagram, List<String>> groupBy = this.gscWords.parallelStream().collect(Collectors.groupingBy(Alphagram::new));
         groupBy.entrySet()
                 .parallelStream()
                 .map(Map.Entry::getValue)

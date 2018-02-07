@@ -106,14 +106,8 @@ public final class Iterate
     /**
      * The procedure is evaluated for each element of the iterable.
      * <p>
-     * Example using a Java 8 lambda expression:
-     * <pre>
-     * Iterate.<b>forEach</b>(people, person -> LOGGER.info(person.getName());
-     * </pre>
-     * <p>
-     * Example using an anonymous inner class:
-     * <pre>
-     * Iterate.<b>forEach</b>(people, new Procedure<Person>()
+     * <pre>e.g.
+     * Iterate.forEach(people, new Procedure<Person>()
      * {
      *     public void value(Person person)
      *     {
@@ -150,19 +144,8 @@ public final class Iterate
      * The procedure2 is evaluated for each element of the iterable with the specified parameter passed
      * as the second argument.
      * <p>
-     * Example using a Java 8 lambda expression:
-     * <pre>
-     * Iterate.<b>forEachWith</b>(people, (Person person, Person other) ->
-     *  {
-     *      if (other.equals(person))
-     *      {
-     *          LOGGER.info(person.getName());
-     *      }
-     *  }, fred);
-     * </pre>
-     * <p>
      * <pre>e.g.
-     * Iterate.<b>forEachWith</b>(people, new Procedure2<Person, Person>()
+     * Iterate.forEachWith(people, new Procedure2<Person, Person>()
      * {
      *     public void value(Person person, Person other)
      *     {
@@ -204,22 +187,6 @@ public final class Iterate
     /**
      * Iterates over a collection passing each element and the current relative int index to the specified instance of
      * ObjectIntProcedure.
-     * <p>
-     * Example using a Java 8 lambda expression:
-     * <pre>
-     * Iterate.<b>forEachWithIndex</b>(people, (Person person, int index) -> LOGGER.info("Index: " + index + " person: " + person.getName()));
-     * </pre>
-     * <p>
-     * Example using anonymous inner class:
-     * <pre>
-     * Iterate.<b>forEachWithIndex</b>(people, new ObjectIntProcedure<Person>()
-     * {
-     *     public void value(Person person, int index)
-     *     {
-     *         LOGGER.info("Index: " + index + " person: " + person.getName());
-     *     }
-     * });
-     * </pre>
      */
     public static <T> void forEachWithIndex(Iterable<T> iterable, ObjectIntProcedure<? super T> objectIntProcedure)
     {
@@ -248,22 +215,14 @@ public final class Iterate
     /**
      * Returns a new collection with only the elements that evaluated to true for the specified predicate.
      * <p>
-     * Example using a Java 8 lambda expression:
-     * <pre>
-     * Collection&lt;Person&gt; selected =
-     *     Iterate.<b>select</b>(people, person -> person.getAddress().getCity().equals("Metuchen"));
-     * </pre>
-     * <p>
-     * Example using an anonymous inner class:
      * <pre>e.g.
-     * Collection&lt;Person&gt; selected =
-     *     Iterate.<b>select</b>(people, new Predicate&lt;Person&gt;()
+     * return Iterate.<b>select</b>(collection, new Predicate&lt;Person&gt;()
+     * {
+     *     public boolean value(Person person)
      *     {
-     *         public boolean value(Person person)
-     *         {
-     *             return person.getAddress().getCity().equals("Metuchen");
-     *         }
-     *     });
+     *         return person.getAddress().getCity().equals("Metuchen");
+     *     }
+     * });
      * </pre>
      */
     public static <T> Collection<T> select(Iterable<T> iterable, Predicate<? super T> predicate)
@@ -297,22 +256,8 @@ public final class Iterate
     /**
      * Returns a new collection with only elements that evaluated to true for the specified predicate and parameter.
      * <p>
-     * Example using a Java 8 lambda expression:
-     * <pre>
-     * Collection&lt;Person&gt; selected =
-     *     Iterate.<b>selectWith</b>(people, (Person person, Integer age) -> person.getAge() >= age, Integer.valueOf(18));
-     * </pre>
-     * <p>
-     * Example using an anonymous inner class:
-     * <pre>
-     * Collection&lt;Person&gt; selected =
-     *      Iterate.<b>selectWith</b>(people, new Predicate2&lt;Person, Integer&gt;()
-     *     {
-     *         public boolean accept(Person person, Integer age)
-     *         {
-     *             return person.getAge() >= age;
-     *         }
-     *     }, Integer.valueOf(18));
+     * <pre>e.g.
+     * return Iterate.<b>selectWith</b>(integers, Predicates2.equal(), new Integer(5));
      * </pre>
      */
     public static <T, IV> Collection<T> selectWith(
@@ -350,22 +295,8 @@ public final class Iterate
     /**
      * Filters a collection into two separate collections based on a predicate returned via a Twin.
      * <p>
-     * Example using a Java 8 lambda expression:
-     * <pre>
-     * Twin&lt;MutableList&lt;Person&gt;&gt;selectedRejected =
-     *      Iterate.<b>selectAndRejectWith</b>(people, (Person person, String lastName) -> lastName.equals(person.getLastName()), "Mason");
-     * </pre>
-     * <p>
-     * Example using an anonymous inner class:
-     * <pre>
-     * Twin&lt;MutableList&lt;Person&gt;&gt;selectedRejected =
-     *      Iterate.<b>selectAndRejectWith</b>(people, new Predicate2&lt;String, String&gt;()
-     *      {
-     *          public boolean accept(Person person, String lastName)
-     *          {
-     *              return lastName.equals(person.getLastName());
-     *          }
-     *      }, "Mason");
+     * <pre>e.g.
+     * return Iterate.<b>selectAndRejectWith</b>(lastNames, Predicates2.lessThan(), "Mason");
      * </pre>
      */
     public static <T, IV> Twin<MutableList<T>> selectAndRejectWith(
@@ -395,22 +326,14 @@ public final class Iterate
     /**
      * Filters a collection into a PartitionIterable based on a predicate.
      * <p>
-     * Example using a Java 8 lambda expression:
-     * <pre>
-     * PartitionIterable&lt;Person&gt; newYorkersAndNonNewYorkers =
-     *      Iterate.<b>partition</b>(people, person -> person.getAddress().getState().getName().equals("New York"));
-     * </pre>
-     * <p>
-     * Example using an anonymous inner class:
-     * <pre>
-     * PartitionIterable&lt;Person&gt; newYorkersAndNonNewYorkers =
-     *      Iterate.<b>partition</b>(people, new Predicate&lt;Person&gt;()
-     *      {
-     *          public boolean value(Person person)
-     *          {
-     *              return person.getAddress().getState().getName().equals("New York");
-     *          }
-     *      });
+     * <pre>e.g.
+     * return Iterate.<b>partition</b>(collection, new Predicate&lt;Person&gt;()
+     * {
+     *     public boolean value(Person person)
+     *     {
+     *         return person.getAddress().getState().getName().equals("New York");
+     *     }
+     * });
      * </pre>
      */
     public static <T> PartitionIterable<T> partition(Iterable<T> iterable, Predicate<? super T> predicate)
@@ -437,22 +360,14 @@ public final class Iterate
     /**
      * Filters a collection into a PartitionIterable based on a predicate.
      * <p>
-     * Example using a Java 8 lambda expression:
-     * <pre>
-     * PartitionIterable&lt;Person>&gt newYorkersAndNonNewYorkers =
-     *     Iterate.<b>partitionWith</b>(people, (Person person, String state) -> person.getAddress().getState().getName().equals(state), "New York");
-     * </pre>
-     * <p>
-     * Example using an anonymous inner class:
-     * <pre>
-     * PartitionIterable&lt;Person&gt; newYorkersAndNonNewYorkers =
-     *      Iterate.<b>partitionWith</b>(people, new Predicate&lt;Person, String&gt;()
-     *      {
-     *          public boolean value(Person person, String state)
-     *          {
-     *              return person.getAddress().getState().getName().equals(state);
-     *          }
-     *      }, "New York");
+     * <pre>e.g.
+     * return Iterate.<b>partitionWith</b>(collection, new Predicate&lt;Person, String&gt;()
+     * {
+     *     public boolean value(Person person, String state)
+     *     {
+     *         return person.getAddress().getState().getName().equals(state);
+     *     }
+     * }, "New York");
      * </pre>
      *
      * @since 5.0.
@@ -512,16 +427,10 @@ public final class Iterate
     /**
      * Returns the total number of elements that evaluate to true for the specified predicate.
      * <p>
-     * Example using a Java 8 lambda expression:
-     * <pre>
-     * int count = Iterate.<b>count</b>(people, person -> person.getAddress().getState().getName().equals("New York"));
-     * </pre>
-     * <p>
-     * Example using anonymous inner class
-     * <pre>
-     * int count = Iterate.<b>count</b>(people, new Predicate&lt;Person&gt;()
+     * <pre>e.g.
+     * return Iterate.<b>count</b>(collection, new Predicate&lt;Person&gt;()
      * {
-     *     public boolean accept(Person person)
+     *     public boolean value(Person person)
      *     {
      *         return person.getAddress().getState().getName().equals("New York");
      *     }
@@ -646,27 +555,18 @@ public final class Iterate
     /**
      * Same as the select method with two parameters but uses the specified target collection
      * <p>
-     * Example using Java 8 lambda:
-     * <pre>
-     * MutableList&lt;Person&gt; selected =
-     *      Iterate.<b>select</b>(people, person -> person.person.getLastName().equals("Smith"), FastList.newList());
-     * </pre>
-     * <p>
-     * Example using anonymous inner class:
-     * <pre>
-     * MutableList&lt;Person&gt; selected =
-     *      Iterate.<b>select</b>(people, new Predicate&lt;Person&gt;()
-     *      {
-     *          public boolean accept(Person person)
-     *          {
+     * <pre>e.g.
+     * return Iterate.select(collection, new Predicate&lt;Person&gt;()
+     * {
+     *     public boolean value(Person person)
+     *     {
      *         return person.person.getLastName().equals("Smith");
      *     }
      * }, FastList.newList());
      * </pre>
      * <p>
-     * Example using Predicates factory:
-     * <pre>
-     * MutableList&lt;Person&gt; selected = Iterate.<b>select</b>(collection, Predicates.attributeEqual("lastName", "Smith"), FastList.newList());
+     * <pre>e.g.
+     * return Iterate.select(collection, Predicates.attributeEqual("lastName", "Smith"), new ArrayList());
      * </pre>
      */
     public static <T, R extends Collection<T>> R select(
@@ -791,29 +691,18 @@ public final class Iterate
     /**
      * Returns all elements of the iterable that evaluate to false for the specified predicate.
      * <p>
-     * Example using Java 8 lambda:
-     * <pre>
-     * Collection&lt;Person&gt; rejected =
-     *      Iterate.<b>reject</b>(people, person -> person.person.getLastName().equals("Smith"));
+     * <pre>e.g.
+     * return Iterate.reject(collection, new Predicate&lt;Person&gt;()
+     * {
+     *     public boolean value(Person person)
+     *     {
+     *         return person.person.getLastName().equals("Smith");
+     *     }
+     * });
      * </pre>
      * <p>
-     * Example using anonymous inner class:
-     * <pre>
-     * Collection&lt;Person&gt; rejected =
-     *      Iterate.<b>reject</b>(people,
-     *          new Predicate&lt;Person&gt;()
-     *          {
-     *              public boolean accept(Person person)
-     *              {
-     *                  return person.person.getLastName().equals("Smith");
-     *              }
-     *          });
-     * </pre>
-     * <p>
-     * Example using Predicates factory:
-     * <pre>
-     * Collection&lt;Person&gt; rejected =
-     *      Iterate.<b>reject</b>(people, Predicates.attributeEqual("lastName", "Smith"));
+     * <pre>e.g.
+     * return Iterate.reject(collection, Predicates.attributeEqual("lastName", "Smith"));
      * </pre>
      */
     public static <T> Collection<T> reject(Iterable<T> iterable, Predicate<? super T> predicate)
@@ -924,11 +813,13 @@ public final class Iterate
     /**
      * Removes all elements from the iterable that evaluate to true for the specified predicate.
      */
-    public static <T> boolean removeIf(Iterable<T> iterable, Predicate<? super T> predicate)
+    public static <T> Collection<T> removeIf(Iterable<T> iterable, Predicate<? super T> predicate)
     {
         if (iterable instanceof MutableCollection)
         {
-            return ((MutableCollection<T>) iterable).removeIf(predicate);
+            MutableCollection<T> mutableCollection = (MutableCollection<T>) iterable;
+            mutableCollection.removeIf(predicate);
+            return mutableCollection;
         }
         if (iterable instanceof ArrayList)
         {
@@ -938,9 +829,16 @@ public final class Iterate
         {
             return ListIterate.removeIf((List<T>) iterable, predicate);
         }
+        if (iterable instanceof Collection)
+        {
+            IterableIterate.removeIf(iterable, predicate);
+            return (Collection<T>) iterable;
+        }
         if (iterable != null)
         {
-            return IterableIterate.removeIf(iterable, predicate);
+            IterableIterate.removeIf(iterable, predicate);
+            // TODO: should this method return Iterable instead?  Would seem less useful if it did
+            return null;
         }
         throw new IllegalArgumentException("Cannot perform a remove on null");
     }
@@ -948,14 +846,16 @@ public final class Iterate
     /**
      * Removes all elements of the iterable that evaluate to true for the specified predicate2 and parameter.
      */
-    public static <T, P> boolean removeIfWith(
+    public static <T, P> Collection<T> removeIfWith(
             Iterable<T> iterable,
             Predicate2<? super T, ? super P> predicate,
             P parameter)
     {
         if (iterable instanceof MutableCollection)
         {
-            return ((MutableCollection<T>) iterable).removeIfWith(predicate, parameter);
+            MutableCollection<T> mutableCollection = (MutableCollection<T>) iterable;
+            mutableCollection.removeIfWith(predicate, parameter);
+            return mutableCollection;
         }
         if (iterable instanceof ArrayList)
         {
@@ -965,33 +865,22 @@ public final class Iterate
         {
             return ListIterate.removeIfWith((List<T>) iterable, predicate, parameter);
         }
+        if (iterable instanceof Collection)
+        {
+            IterableIterate.removeIfWith(iterable, predicate, parameter);
+            return (Collection<T>) iterable;
+        }
         if (iterable != null)
         {
-            return IterableIterate.removeIfWith(iterable, predicate, parameter);
+            IterableIterate.removeIfWith(iterable, predicate, parameter);
+            // TODO: should this method return Iterable instead?  Would seem less useful if it did
+            return null;
         }
         throw new IllegalArgumentException("Cannot perform a remove on null");
     }
 
     /**
-     * Similar to {@link #reject(Iterable, Predicate)}, except with an evaluation parameter for the second generic argument in {@link Predicate2}.
-     * <p>
-     * Example using a Java 8 lambda expression:
-     * <pre>
-     * Collection&lt;Person&gt; rejected =
-     *     Iterate.<b>rejectWith</b>(people, (Person person, Integer age) -> person.getAge() >= age, Integer.valueOf(18));
-     * </pre>
-     * <p>
-     * Example using an anonymous inner class:
-     * <pre>
-     * Collection&lt;Person&gt; rejected =
-     *      Iterate.<b>rejectWith</b>(people, new Predicate2&lt;Person, Integer&gt;()
-     *     {
-     *         public boolean accept(Person person, Integer age)
-     *         {
-     *             return person.getAge() >= age;
-     *         }
-     *     }, Integer.valueOf(18));
-     * </pre>
+     * Returns all elements of the iterable that evaluate to false for the specified predicate2 and parameter.
      */
     public static <T, P> Collection<T> rejectWith(
             Iterable<T> iterable,
@@ -1026,31 +915,16 @@ public final class Iterate
     }
 
     /**
-     * Same as the reject method with one parameter but uses the specified target collection for the results.
+     * Same as the reject method with two parameters but uses the specified target collection for the results.
      * <p>
-     * Example using Java 8 lambda:
-     * <pre>
-     * MutableList&lt;Person&gt; rejected =
-     *      Iterate.<b>reject</b>(people, person -> person.person.getLastName().equals("Smith"), FastList.newList());
-     * </pre>
-     * <p>
-     * Example using anonymous inner class:
-     * <pre>
-     * MutableList&lt;Person&gt; rejected =
-     *      Iterate.<b>reject</b>(people,
-     *          new Predicate&lt;Person&gt;()
-     *          {
-     *              public boolean accept(Person person)
-     *              {
-     *                  return person.person.getLastName().equals("Smith");
-     *              }
-     *          }, FastList.newList());
-     * </pre>
-     * <p>
-     * Example using Predicates factory:
-     * <pre>
-     * MutableList&lt;Person&gt; rejected =
-     *      Iterate.<b>reject</b>(people, Predicates.attributeEqual("lastName", "Smith"), FastList.newList());
+     * <pre>e.g.
+     * return Iterate.reject(collection, new Predicate&lt;Person&gt;()
+     * {
+     *     public boolean value(Person person)
+     *     {
+     *         return person.person.getLastName().equals("Smith");
+     *     }
+     * }, FastList.newList());
      * </pre>
      */
     public static <T, R extends Collection<T>> R reject(
@@ -1110,7 +984,7 @@ public final class Iterate
     }
 
     /**
-     * Add all elements from the source Iterable to the target collection, return the target collection.
+     * Add all elements from the source Iterable to the target collection, return the target collection
      */
     public static <T, R extends Collection<T>> R addAllTo(Iterable<? extends T> iterable, R targetCollection)
     {
@@ -1118,9 +992,6 @@ public final class Iterate
         return targetCollection;
     }
 
-    /**
-     * Add all elements from the source Iterable to the target collection, returns true if any element was added.
-     */
     public static <T> boolean addAllIterable(Iterable<? extends T> iterable, Collection<T> targetCollection)
     {
         if (iterable == null)
@@ -1136,18 +1007,12 @@ public final class Iterate
         return targetCollection.size() != oldSize;
     }
 
-    /**
-     * Remove all elements present in Iterable from the target collection, return the target collection.
-     */
     public static <T, R extends Collection<T>> R removeAllFrom(Iterable<? extends T> iterable, R targetCollection)
     {
         Iterate.removeAllIterable(iterable, targetCollection);
         return targetCollection;
     }
 
-    /**
-     * Remove all elements present in Iterable from the target collection, returns true if any element was removed.
-     */
     public static <T> boolean removeAllIterable(Iterable<? extends T> iterable, Collection<T> targetCollection)
     {
         if (iterable == null)
@@ -1166,23 +1031,14 @@ public final class Iterate
     /**
      * Returns a new collection with the results of applying the specified function for each element of the iterable.
      * <p>
-     * Example using a Java 8 lambda expression:
-     * <pre>
-     * Collection&lt;String&gt; names =
-     *      Iterate.<b>collect</b>(people, person -> person.getFirstName() + " " + person.getLastName());
-     * </pre>
-     * <p>
-     * Example using an anonymous inner class:
-     * <pre>
-     * Collection&lt;String&gt; names =
-     *      Iterate.<b>collect</b>(people,
-     *          new Function&lt;Person, String&gt;()
-     *          {
-     *              public String value(Person person)
-     *              {
-     *                  return person.getFirstName() + " " + person.getLastName();
-     *              }
-     *          });
+     * <pre>e.g.
+     * return Iterate.collect(collection, new Function&lt;Person, String&gt;()
+     * {
+     *     public String value(Person person)
+     *     {
+     *         return person.getFirstName() + " " + person.getLastName();
+     *     }
+     * });
      * </pre>
      */
     public static <T, V> Collection<V> collect(
@@ -1218,72 +1074,16 @@ public final class Iterate
     }
 
     /**
-     * Same as the {@link #collect(Iterable, Function)} method with two parameters, except that the results are gathered into the specified
-     * targetCollection
+     * Returns a new collection with the results of applying the specified booleanFunction for each element of the iterable.
      * <p>
-     * Example using a Java 8 lambda expression:
-     * <pre>
-     * MutableList&lt;String&gt; names =
-     *      Iterate.<b>collect</b>(people, person -> person.getFirstName() + " " + person.getLastName(), FastList.newList());
-     * </pre>
-     * <p>
-     * Example using an anonymous inner class:
-     * <pre>
-     * MutableList&lt;String&gt; names =
-     *      Iterate.<b>collect</b>(people,
-     *          new Function&lt;Person, String&gt;()
-     *          {
-     *              public String value(Person person)
-     *              {
-     *                  return person.getFirstName() + " " + person.getLastName();
-     *              }
-     *          }, FastList.newList());
-     * </pre>
-     */
-    public static <T, A, R extends Collection<A>> R collect(
-            Iterable<T> iterable,
-            Function<? super T, ? extends A> function,
-            R targetCollection)
-    {
-        if (iterable instanceof RichIterable)
-        {
-            return ((RichIterable<T>) iterable).collect(function, targetCollection);
-        }
-        if (iterable instanceof ArrayList)
-        {
-            return ArrayListIterate.collect((ArrayList<T>) iterable, function, targetCollection);
-        }
-        if (iterable instanceof RandomAccess)
-        {
-            return RandomAccessListIterate.collect((List<T>) iterable, function, targetCollection);
-        }
-        if (iterable != null)
-        {
-            return IterableIterate.collect(iterable, function, targetCollection);
-        }
-        throw new IllegalArgumentException("Cannot perform a collect on null");
-    }
-
-    /**
-     * Returns a new primitive {@code boolean} collection with the results of applying the specified booleanFunction for each element of the iterable.
-     * <p>
-     * Example using Java 8 lambda:
-     * <pre>
-     * MutableBooleanCollection voters =
-     *      Iterable.<b>collectBoolean</b>(people, person -> person.canVote());
-     * </pre>
-     * <p>
-     * Example using anonymous inner class:
-     * <pre>
-     * MutableBooleanCollection voters =
-     *      Iterate.<b>collectBoolean</b>(people,
-     *          new BooleanFunction&lt;Person&gt;()
-     *          {
-     *              public boolean booleanValueOf(Person person)
-     *              {
-     *                  return person.canVote();
-     *              }
-     *          });
+     * <pre>e.g.
+     * return Iterate.collectBoolean(collection, new BooleanFunction&lt;Person&gt;()
+     * {
+     *     public boolean booleanValueOf(Person person)
+     *     {
+     *         return person.canVote();
+     *     }
+     * });
      * </pre>
      */
     public static <T> MutableBooleanCollection collectBoolean(
@@ -1313,23 +1113,14 @@ public final class Iterate
      * Same as {@link #collectBoolean(Iterable, BooleanFunction)}, except that the results are gathered into the specified {@code target}
      * collection.
      * <p>
-     * Example using Java 8 lambda:
-     * <pre>
-     * BooleanArrayList voters =
-     *      Iterable.<b>collectBoolean</b>(people, person -> person.canVote(), new BooleanArrayList());
-     * </pre>
-     * <p>
-     * Example using an anonymous inner class:
-     * <pre>
-     * BooleanArrayList voters =
-     *      Iterate.<b>collectBoolean</b>(people,
-     *          new BooleanFunction&lt;Person&gt;()
-     *          {
-     *              public boolean booleanValueOf(Person person)
-     *              {
-     *                  return person.canVote();
-     *              }
-     *          }, new BooleanArrayList());
+     * <pre>e.g.
+     * return Iterate.collectBoolean(collection, new BooleanFunction&lt;Person&gt;()
+     * {
+     *     public boolean booleanValueOf(Person person)
+     *     {
+     *         return person.canVote();
+     *     }
+     * }, new BooleanArrayList());
      * </pre>
      */
     public static <T, R extends MutableBooleanCollection> R collectBoolean(
@@ -1357,25 +1148,16 @@ public final class Iterate
     }
 
     /**
-     * Returns a new {@code byte} collection with the results of applying the specified byteFunction for each element of the iterable.
+     * Returns a new collection with the results of applying the specified byteFunction for each element of the iterable.
      * <p>
-     * Example using Java 8 lambda:
-     * <pre>
-     * MutableByteCollection bytes =
-     *      Iterate.<b>collectByte</b>(people, person -> person.getCode());
-     * </pre>
-     * <p>
-     * Example using anonymous inner class:
-     * <pre>
-     * MutableByteCollection bytes =
-     *      Iterate.<b>collectByte</b>(people,
-     *          new ByteFunction&lt;Person&gt;()
-     *          {
-     *              public byte byteValueOf(Person person)
-     *              {
-     *                  return person.getCode();
-     *              }
-     *          });
+     * <pre>e.g.
+     * return Iterate.collectByte(collection, new ByteFunction&lt;Person&gt;()
+     * {
+     *     public byte byteValueOf(Person person)
+     *     {
+     *         return person.getCode();
+     *     }
+     * });
      * </pre>
      */
     public static <T> MutableByteCollection collectByte(
@@ -1405,23 +1187,14 @@ public final class Iterate
      * Same as {@link #collectByte(Iterable, ByteFunction)}, except that the results are gathered into the specified {@code target}
      * collection.
      * <p>
-     * Example using a Java 8 lambda expression:
-     * <pre>
-     * ByteArrayList bytes =
-     *      Iterate.<b>collectByte</b>(people, person -> person.getCode(), new ByteArrayList());
-     * </pre>
-     * <p>
-     * Example using an anonymous inner class:
-     * <pre>
-     * ByteArrayList bytes =
-     *      Iterate.<b>collectByte</b>(people,
-     *          new ByteFunction&lt;Person&gt;()
-     *          {
-     *              public byte byteValueOf(Person person)
-     *              {
-     *                  return person.getCode();
-     *              }
-     *          }, new ByteArrayList());
+     * <pre>e.g.
+     * return Iterate.collectByte(collection, new ByteFunction&lt;Person&gt;()
+     * {
+     *     public byte byteValueOf(Person person)
+     *     {
+     *         return person.getCode();
+     *     }
+     * }, new ByteArrayList());
      * </pre>
      */
     public static <T, R extends MutableByteCollection> R collectByte(
@@ -1449,25 +1222,16 @@ public final class Iterate
     }
 
     /**
-     * Returns a new {@code char} collection with the results of applying the specified charFunction for each element of the iterable.
+     * Returns a new collection with the results of applying the specified charFunction for each element of the iterable.
      * <p>
-     * Example using Java 8 lambda:
-     * <pre>
-     * MutableCharCollection chars =
-     *      Iterate.<b>collectChar</b>(people, person -> person.getMiddleInitial());
-     * </pre>
-     * <p>
-     * Example using anonymous inner class:
-     * <pre>
-     * MutableCharCollection chars =
-     *      Iterate.<b>collectChar</b>(people,
-     *          new CharFunction&lt;Person&gt;()
-     *          {
-     *              public char charValueOf(Person person)
-     *              {
-     *                  return person.getMiddleInitial();
-     *              }
-     *          });
+     * <pre>e.g.
+     * return Iterate.collectChar(collection, new CharFunction&lt;Person&gt;()
+     * {
+     *     public char charValueOf(Person person)
+     *     {
+     *         return person.getMiddleInitial();
+     *     }
+     * });
      * </pre>
      */
     public static <T> MutableCharCollection collectChar(
@@ -1497,22 +1261,14 @@ public final class Iterate
      * Same as {@link #collectChar(Iterable, CharFunction)}, except that the results are gathered into the specified {@code target}
      * collection.
      * <p>
-     * <pre>
-     * CharArrayList chars =
-     *      Iterate.<b>collectChar</b>(people, person -> person.getMiddleInitial());
-     * </pre>
-     * <p>
-     * Example using anonymous inner class:
-     * <pre>
-     * CharArrayList chars =
-     *      Iterate.<b>collectChar</b>(people,
-     *          new CharFunction&lt;Person&gt;()
-     *          {
-     *              public char charValueOf(Person person)
-     *              {
-     *                  return person.getMiddleInitial();
-     *              }
-     *          }, new CharArrayList());
+     * <pre>e.g.
+     * return Iterate.collectChar(collection, new CharFunction&lt;Person&gt;()
+     * {
+     *     public char charValueOf(Person person)
+     *     {
+     *         return person.getMiddleInitial();
+     *     }
+     * }, new CharArrayList());
      * </pre>
      */
     public static <T, R extends MutableCharCollection> R collectChar(
@@ -1540,24 +1296,16 @@ public final class Iterate
     }
 
     /**
-     * Returns a new {@code double} collection with the results of applying the specified doubleFunction for each element of the iterable.
+     * Returns a new collection with the results of applying the specified doubleFunction for each element of the iterable.
      * <p>
-     * Example using a Java 8 lambda expression:
-     * <pre>
-     * MutableDoubleCollection doubles =
-     *      Iterate.<b>collectDouble</b>(people, person -> person.getMilesFromNorthPole());
-     * </pre>
-     * Example using an anonymous inner class:
-     * <pre>
-     * MutableDoubleCollection doubles =
-     *      Iterate.<b>collectDouble</b>(people,
-     *          new DoubleFunction&lt;Person&gt;()
-     *          {
-     *              public double doubleValueOf(Person person)
-     *              {
-     *                  return person.getMilesFromNorthPole();
-     *              }
-     *          });
+     * <pre>e.g.
+     * return Iterate.collectDouble(collection, new DoubleFunction&lt;Person&gt;()
+     * {
+     *     public double doubleValueOf(Person person)
+     *     {
+     *         return person.getMilesFromNorthPole();
+     *     }
+     * });
      * </pre>
      */
     public static <T> MutableDoubleCollection collectDouble(
@@ -1587,23 +1335,14 @@ public final class Iterate
      * Same as {@link #collectDouble(Iterable, DoubleFunction)}, except that the results are gathered into the specified {@code target}
      * collection.
      * <p>
-     * Example using a Java 8 lambda expression:
-     * <pre>
-     * DoubleArrayList doubles =
-     *      Iterate.<b>collectDouble</b>(people, person -> person.getMilesFromNorthPole());
-     * </pre>
-     * <p>
-     * Example using an anonymous inner class:
-     * <pre>
-     * DoubleArrayList doubles =
-     *      Iterate.<b>collectDouble</b>(people,
-     *          new DoubleFunction&lt;Person&gt;()
-     *          {
-     *              public double doubleValueOf(Person person)
-     *              {
-     *                  return person.getMilesFromNorthPole();
-     *              }
-     *          }, new DoubleArrayList());
+     * <pre>e.g.
+     * return Iterate.collectDouble(collection, new DoubleFunction&lt;Person&gt;()
+     * {
+     *     public double doubleValueOf(Person person)
+     *     {
+     *         return person.getMilesFromNorthPole();
+     *     }
+     * }, new DoubleArrayList());
      * </pre>
      */
     public static <T, R extends MutableDoubleCollection> R collectDouble(
@@ -1631,25 +1370,16 @@ public final class Iterate
     }
 
     /**
-     * Returns a new {@code float} collection with the results of applying the specified floatFunction for each element of the iterable.
+     * Returns a new collection with the results of applying the specified floatFunction for each element of the iterable.
      * <p>
-     * Example using a Java 8 lambda expression:
-     * <pre>
-     * MutableFloatCollection floats =
-     *      Iterate.<b>collectFloat</b>(people, person -> person.getHeightInInches());
-     * </pre>
-     * <p>
-     * Example using an anonymous inner class:
-     * <pre>
-     * MutableFloatCollection floats =
-     *      Iterate.<b>collectFloat</b>(people,
-     *          new FloatFunction&lt;Person&gt;()
-     *          {
-     *              public float floatValueOf(Person person)
-     *              {
-     *                  return person.getHeightInInches();
-     *              }
-     *          });
+     * <pre>e.g.
+     * return Iterate.collectFloat(collection, new FloatFunction&lt;Person&gt;()
+     * {
+     *     public float floatValueOf(Person person)
+     *     {
+     *         return person.getHeightInInches();
+     *     }
+     * });
      * </pre>
      */
     public static <T> MutableFloatCollection collectFloat(
@@ -1679,23 +1409,14 @@ public final class Iterate
      * Same as {@link #collectFloat(Iterable, FloatFunction)}, except that the results are gathered into the specified {@code target}
      * collection.
      * <p>
-     * Example using a Java 8 lambda expression:
-     * <pre>
-     * FloatArrayList floats =
-     *      Iterate.<b>collectFloat</b>(people, person -> person.getHeightInInches(), new FloatArrayList());
-     * </pre>
-     * <p>
-     * Example using an anonymous inner class:
-     * <pre>
-     * FloatArrayList floats =
-     *      Iterate.<b>collectFloat</b>(people,
-     *          new FloatFunction&lt;Person&gt;()
-     *          {
-     *              public float floatValueOf(Person person)
-     *              {
-     *                  return person.getHeightInInches();
-     *              }
-     *          }, new FloatArrayList());
+     * <pre>e.g.
+     * return Iterate.collectFloat(collection, new FloatFunction&lt;Person&gt;()
+     * {
+     *     public float floatValueOf(Person person)
+     *     {
+     *         return person.getHeightInInches();
+     *     }
+     * }, new FloatArrayList());
      * </pre>
      */
     public static <T, R extends MutableFloatCollection> R collectFloat(
@@ -1723,25 +1444,16 @@ public final class Iterate
     }
 
     /**
-     * Returns a new {@code int} collection with the results of applying the specified intFunction for each element of the iterable.
+     * Returns a new collection with the results of applying the specified intFunction for each element of the iterable.
      * <p>
-     * Example using a Java 8 lambda expression:
-     * <pre>
-     * MutableIntCollection ages =
-     *      Iterate.<b>collectInt</b>(people, person -> person.getAge());
-     * </pre>
-     * <p>
-     * Example using an anonymous inner class:
-     * <pre>
-     * MutableIntCollection ages =
-     *      Iterate.<b>collectInt</b>(people,
-     *          new IntFunction&lt;Person&gt;()
-     *          {
-     *              public int intValueOf(Person person)
-     *              {
-     *                  return person.getAge();
-     *              }
-     *          });
+     * <pre>e.g.
+     * return Iterate.collectInt(collection, new IntFunction&lt;Person&gt;()
+     * {
+     *     public int intValueOf(Person person)
+     *     {
+     *         return person.getAge();
+     *     }
+     * });
      * </pre>
      */
     public static <T> MutableIntCollection collectInt(
@@ -1771,23 +1483,14 @@ public final class Iterate
      * Same as {@link #collectInt(Iterable, IntFunction)}, except that the results are gathered into the specified {@code target}
      * collection.
      * <p>
-     * Example using a Java 8 lambda expression:
-     * <pre>
-     * IntArrayList ages =
-     *      Iterate.<b>collectInt</b>(people, person -> person.getAge(), new IntArrayList());
-     * </pre>
-     * <p>
-     * Example using an anonymous inner class:
-     * <pre>
-     * IntArrayList ages =
-     *      Iterate.<b>collectInt</b>(people,
-     *          new IntFunction&lt;Person&gt;()
-     *          {
-     *              public int intValueOf(Person person)
-     *              {
-     *                  return person.getAge();
-     *              }
-     *          }, new IntArrayList());
+     * <pre>e.g.
+     * return Iterate.collectInt(collection, new IntFunction&lt;Person&gt;()
+     * {
+     *     public int intValueOf(Person person)
+     *     {
+     *         return person.getAge();
+     *     }
+     * }, new IntArrayList());
      * </pre>
      */
     public static <T, R extends MutableIntCollection> R collectInt(
@@ -1815,25 +1518,16 @@ public final class Iterate
     }
 
     /**
-     * Returns a new {@code long} collection with the results of applying the specified longFunction for each element of the iterable.
+     * Returns a new collection with the results of applying the specified longFunction for each element of the iterable.
      * <p>
-     * Example using a Java 8 lambda expression:
-     * <pre>
-     * MutableLongCollection longs =
-     *      Iterate.<b>collectLong</b>(people, person -> person.getGuid());
-     * </pre>
-     * <p>
-     * Example using an anonymous inner class:
-     * <pre>
-     * MutableLongCollection longs =
-     *      Iterate.<b>collectLong</b>(people,
-     *          new LongFunction&lt;Person&gt;()
-     *          {
-     *              public long longValueOf(Person person)
-     *              {
-     *                  return person.getGuid();
-     *              }
-     *          });
+     * <pre>e.g.
+     * return Iterate.collectLong(collection, new LongFunction&lt;Person&gt;()
+     * {
+     *     public long longValueOf(Person person)
+     *     {
+     *         return person.getGuid();
+     *     }
+     * });
      * </pre>
      */
     public static <T> MutableLongCollection collectLong(
@@ -1863,23 +1557,14 @@ public final class Iterate
      * Same as {@link #collectLong(Iterable, LongFunction)}, except that the results are gathered into the specified {@code target}
      * collection.
      * <p>
-     * Example using a Java 8 lambda expression:
-     * <pre>
-     * LongArrayList longs =
-     *      Iterate.<b>collectLong</b>(people, person -> person.getGuid(), new LongArrayList());
-     * </pre>
-     * <p>
-     * Example using an anonymous inner class:
-     * <pre>
-     * LongArrayList longs =
-     *      Iterate.<b>collectLong</b>(people,
-     *              new LongFunction&lt;Person&gt;()
-     *              {
-     *                  public long longValueOf(Person person)
-     *                  {
-     *                      return person.getGuid();
-     *                  }
-     *              }, new LongArrayList());
+     * <pre>e.g.
+     * return Iterate.collectLong(collection, new LongFunction&lt;Person&gt;()
+     * {
+     *     public long longValueOf(Person person)
+     *     {
+     *         return person.getGuid();
+     *     }
+     * }, new LongArrayList());
      * </pre>
      */
     public static <T, R extends MutableLongCollection> R collectLong(
@@ -1907,25 +1592,16 @@ public final class Iterate
     }
 
     /**
-     * Returns a new {@code short} collection with the results of applying the specified shortFunction for each element of the iterable.
+     * Returns a new collection with the results of applying the specified shortFunction for each element of the iterable.
      * <p>
-     * Example using a Java 8 lambda expression:
-     * <pre>
-     * MutableShortCollection shorts =
-     *      Iterate.<b>collectShort</b>(people, person -> person.getNumberOfJunkMailItemsReceivedPerMonth());
-     * </pre>
-     * <p>
-     * Example using an anonymous inner class:
-     * <pre>
-     * MutableShortCollection shorts =
-     *      Iterate.<b>collectShort</b>(people,
-     *          new ShortFunction&lt;Person&gt;()
-     *          {
-     *              public short shortValueOf(Person person)
-     *              {
-     *                  return person.getNumberOfJunkMailItemsReceivedPerMonth();
-     *              }
-     *          });
+     * <pre>e.g.
+     * return Iterate.collectShort(collection, new ShortFunction&lt;Person&gt;()
+     * {
+     *     public short shortValueOf(Person person)
+     *     {
+     *         return person.getNumberOfJunkMailItemsReceivedPerMonth();
+     *     }
+     * });
      * </pre>
      */
     public static <T> MutableShortCollection collectShort(
@@ -1955,23 +1631,14 @@ public final class Iterate
      * Same as {@link #collectShort(Iterable, ShortFunction)}, except that the results are gathered into the specified {@code target}
      * collection.
      * <p>
-     * Example using a Java 8 lambda expression:
-     * <pre>
-     * ShortArrayList shorts =
-     *      Iterate.<b>collectShort</b>(people, person -> person.getNumberOfJunkMailItemsReceivedPerMonth(), new ShortArrayList());
-     * </pre>
-     * <p>
-     * Example using an anonymous inner class:
-     * <pre>
-     * ShortArrayList shorts =
-     *      Iterate.<b>collectShort</b>(people,
-     *          new ShortFunction&lt;Person&gt;()
-     *          {
-     *              public short shortValueOf(Person person)
-     *              {
-     *                  return person.getNumberOfJunkMailItemsReceivedPerMonth();
-     *              }
-     *          }, new ShortArrayList());
+     * <pre>e.g.
+     * return Iterate.collectShort(collection, new ShortFunction&lt;Person&gt;()
+     * {
+     *     public short shortValueOf(Person person)
+     *     {
+     *         return person.getNumberOfJunkMailItemsReceivedPerMonth();
+     *     }
+     * }, new ShortArrayList());
      * </pre>
      */
     public static <T, R extends MutableShortCollection> R collectShort(
@@ -2031,6 +1698,44 @@ public final class Iterate
             return IterableIterate.flatCollect(iterable, function);
         }
         throw new IllegalArgumentException("Cannot perform a flatCollect on null");
+    }
+
+    /**
+     * Same as the collect method with two parameters, except that the results are gathered into the specified
+     * targetCollection
+     * <p>
+     * <pre>e.g.
+     * return Iterate.collect(collection, new Function&lt;Person, String&gt;()
+     * {
+     *     public String value(Person person)
+     *     {
+     *         return person.getFirstName() + " " + person.getLastName();
+     *     }
+     * }, FastList.newList());
+     * </pre>
+     */
+    public static <T, A, R extends Collection<A>> R collect(
+            Iterable<T> iterable,
+            Function<? super T, ? extends A> function,
+            R targetCollection)
+    {
+        if (iterable instanceof RichIterable)
+        {
+            return ((RichIterable<T>) iterable).collect(function, targetCollection);
+        }
+        if (iterable instanceof ArrayList)
+        {
+            return ArrayListIterate.collect((ArrayList<T>) iterable, function, targetCollection);
+        }
+        if (iterable instanceof RandomAccess)
+        {
+            return RandomAccessListIterate.collect((List<T>) iterable, function, targetCollection);
+        }
+        if (iterable != null)
+        {
+            return IterableIterate.collect(iterable, function, targetCollection);
+        }
+        throw new IllegalArgumentException("Cannot perform a collect on null");
     }
 
     /**
@@ -2246,14 +1951,8 @@ public final class Iterate
      * Returns the first element of the iterable that evaluates to true for the specified predicate, or null if
      * no element evaluates to true.
      * <p>
-     * Example using a Java 8 lambda expression:
-     * <pre>
-     * Person person = Iterate.<b>detect</b>(people, person -> person.getFirstName().equals("John") && person.getLastName().equals("Smith"));
-     * </pre>
-     * <p>
-     * Example using an anonymous inner class:
-     * <pre>
-     * Person person = Iterate.<b>detect</b>(people, new Predicate&lt;Person&gt;()
+     * <pre>e.g.
+     * return Iterate.detect(collection, new Predicate&lt;Person&gt;()
      * {
      *     public boolean value(Person person)
      *     {
@@ -2287,14 +1986,8 @@ public final class Iterate
      * Returns the first element of the iterable that evaluates to true for the specified predicate2 and parameter,
      * or null if no element evaluates to true.
      * <p>
-     * Example using a Java 8 lambda expression:
-     * <pre>
-     * Person person = Iterate.<b>detectWith</b>(people, (person, fullName) -> person.getFullName().equals(fullName), "John Smith");
-     * </pre>
-     * <p>
-     * Example using an anonymous inner class:
-     * <pre>
-     * Person person = Iterate.<b>detectWith</b>(people, new Predicate2&lt;Person, String&gt;()
+     * <pre>e.g.
+     * Iterate.detectWith(collection, new Predicate2&lt;Person, String&gt;()
      * {
      *     public boolean value(Person person, String fullName)
      *     {
@@ -2352,7 +2045,7 @@ public final class Iterate
     }
 
     /**
-     * Searches for the first occurrence where the predicate evaluates to true, returns -1 if the predicate does not evaluate to true.
+     * Searches for the first occurrence where the predicate evaluates to true.
      */
     public static <T> int detectIndex(Iterable<T> iterable, Predicate<? super T> predicate)
     {
@@ -2372,7 +2065,7 @@ public final class Iterate
     }
 
     /**
-     * Searches for the first occurrence where the predicate2 and parameter evaluates to true, returns -1 if the predicate2 and parameter do not evaluate to true.
+     * Searches for the first occurrence where the predicate evaluates to true.
      */
     public static <T, P> int detectIndexWith(
             Iterable<T> iterable,
@@ -2646,8 +2339,6 @@ public final class Iterate
     }
 
     /**
-     * Groups and sums the values of the iterable using the two specified functions.
-     *
      * @since 6.0
      */
     public static <V, T> MutableMap<V, BigDecimal> sumByBigDecimal(Iterable<T> iterable, Function<T, V> groupBy, Function<? super T, BigDecimal> function)
@@ -2664,8 +2355,6 @@ public final class Iterate
     }
 
     /**
-     * Groups and sums the values of the iterable using the two specified functions.
-     *
      * @since 6.0
      */
     public static <V, T> MutableMap<V, BigInteger> sumByBigInteger(Iterable<T> iterable, Function<T, V> groupBy, Function<? super T, BigInteger> function)
@@ -2761,9 +2450,6 @@ public final class Iterate
         throw new IllegalArgumentException("Cannot perform an injectInto on null");
     }
 
-    /**
-     * Similar to {@link #injectInto(Object, Iterable, Function2)}, except with a parameter is used as third generic argument in function3.
-     */
     public static <T, IV, P> IV injectIntoWith(
             IV injectValue,
             Iterable<T> iterable,
@@ -2974,8 +2660,7 @@ public final class Iterate
 
     /**
      * Iterate over the specified collection applying a specific Function to each element to calculate a
-     * key, and add the results to input Map.
-     * This method will mutate the input Map.
+     * key, and return the results as a Map.
      */
     public static <T, K, V, M extends Map<K, V>> M addToMap(
             Iterable<T> iterable,
@@ -2988,8 +2673,7 @@ public final class Iterate
 
     /**
      * Iterate over the specified collection applying the specified Functions to each element to calculate
-     * a key and value, and add the results to input Map.
-     * This method will mutate the input Map.
+     * a key and value, and return the results as a Map.
      */
     public static <T, K, V, M extends Map<K, V>> M addToMap(
             Iterable<T> iterable,
@@ -3018,9 +2702,8 @@ public final class Iterate
     }
 
     /**
-     * Returns the size of an iterable.
-     * In the case of Collections and RichIterables, the method size is called.
-     * All other iterables will force a complete iteration to happen, which can be unnecessarily costly.
+     * Returns the size of an iterable.  In the case of Collections and RichIterables, the method size is called.  All
+     * other iterables will force a complete iteration to happen, which can be unnecessarily costly.
      */
     public static int sizeOf(Iterable<?> iterable)
     {
@@ -3036,9 +2719,8 @@ public final class Iterate
     }
 
     /**
-     * Returns true if the iterable contains the value.
-     * In the case of Collections and RichIterables, the method contains is called.
-     * All other iterables will force a complete iteration to happen, which can be unnecessarily costly.
+     * Returns true if the iterable contains the value.  In the case of Collections and RichIterables, the method contains
+     * is called.  All other iterables will force a complete iteration to happen, which can be unnecessarily costly.
      */
     public static boolean contains(Iterable<?> iterable, Object value)
     {
@@ -3540,9 +3222,6 @@ public final class Iterate
         }
     }
 
-    /**
-     * Returns the maximum element out of the iterable based on the natural order of the attribute returned by the function.
-     */
     public static <T, V extends Comparable<? super V>> T maxBy(Iterable<T> iterable, Function<? super T, ? extends V> function)
     {
         if (iterable instanceof RichIterable)
@@ -3560,9 +3239,6 @@ public final class Iterate
         throw new IllegalArgumentException("Cannot perform a maxBy on null");
     }
 
-    /**
-     * Returns the minimum element out of the iterable based on the natural order of the attribute returned by the function.
-     */
     public static <T, V extends Comparable<? super V>> T minBy(Iterable<T> iterable, Function<? super T, ? extends V> function)
     {
         if (iterable instanceof RichIterable)
@@ -3580,9 +3256,6 @@ public final class Iterate
         throw new IllegalArgumentException("Cannot perform a minBy on null");
     }
 
-    /**
-     * Flip the keys and values of the multimap.
-     */
     public static <K, V> HashBagMultimap<V, K> flip(BagMultimap<K, V> bagMultimap)
     {
         final HashBagMultimap<V, K> result = new HashBagMultimap<V, K>();
@@ -3602,9 +3275,6 @@ public final class Iterate
         return result;
     }
 
-    /**
-     * Flip the keys and values of the multimap.
-     */
     public static <K, V> HashBagMultimap<V, K> flip(ListMultimap<K, V> listMultimap)
     {
         final HashBagMultimap<V, K> result = new HashBagMultimap<V, K>();
@@ -3624,9 +3294,6 @@ public final class Iterate
         return result;
     }
 
-    /**
-     * Flip the keys and values of the multimap.
-     */
     public static <K, V> UnifiedSetMultimap<V, K> flip(SetMultimap<K, V> setMultimap)
     {
         final UnifiedSetMultimap<V, K> result = new UnifiedSetMultimap<V, K>();

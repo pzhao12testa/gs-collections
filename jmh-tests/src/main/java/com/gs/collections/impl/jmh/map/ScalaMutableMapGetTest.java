@@ -19,7 +19,6 @@ package com.gs.collections.impl.jmh.map;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
-import com.gs.collections.impl.jmh.runner.AbstractJMHTestRunner;
 import org.apache.commons.lang.RandomStringUtils;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
@@ -34,7 +33,7 @@ import scala.collection.mutable.Map;
 @State(Scope.Thread)
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.SECONDS)
-public class ScalaMutableMapGetTest extends AbstractJMHTestRunner
+public class ScalaMutableMapGetTest
 {
     private static final int RANDOM_COUNT = 9;
 
@@ -52,7 +51,7 @@ public class ScalaMutableMapGetTest extends AbstractJMHTestRunner
         Random random = new Random(123456789012345L);
 
         this.elements = new String[this.size];
-        this.scalaMap = new PresizableHashMap<>(this.size);
+        this.scalaMap = new PresizableHashMap<>(this.size, 750);
 
         for (int i = 0; i < this.size; i++)
         {

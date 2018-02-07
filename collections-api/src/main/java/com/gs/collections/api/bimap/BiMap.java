@@ -23,7 +23,7 @@ import com.gs.collections.api.block.predicate.Predicate2;
 import com.gs.collections.api.block.procedure.Procedure;
 import com.gs.collections.api.map.MapIterable;
 import com.gs.collections.api.multimap.set.SetMultimap;
-import com.gs.collections.api.partition.set.PartitionUnsortedSet;
+import com.gs.collections.api.partition.set.PartitionSet;
 import com.gs.collections.api.set.SetIterable;
 import com.gs.collections.api.tuple.Pair;
 
@@ -82,9 +82,9 @@ public interface BiMap<K, V> extends MapIterable<K, V>
 
     <P> SetIterable<V> rejectWith(Predicate2<? super V, ? super P> predicate, P parameter);
 
-    PartitionUnsortedSet<V> partition(Predicate<? super V> predicate);
+    PartitionSet<V> partition(Predicate<? super V> predicate);
 
-    <P> PartitionUnsortedSet<V> partitionWith(Predicate2<? super V, ? super P> predicate, P parameter);
+    <P> PartitionSet<V> partitionWith(Predicate2<? super V, ? super P> predicate, P parameter);
 
     <S> SetIterable<S> selectInstancesOf(Class<S> clazz);
 

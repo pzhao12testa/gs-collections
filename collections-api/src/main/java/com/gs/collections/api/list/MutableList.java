@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Goldman Sachs.
+ * Copyright 2014 Goldman Sachs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,7 @@ package com.gs.collections.api.list;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.Random;
 
-import com.gs.collections.api.RichIterable;
-import com.gs.collections.api.block.HashingStrategy;
 import com.gs.collections.api.block.function.Function;
 import com.gs.collections.api.block.function.Function2;
 import com.gs.collections.api.block.function.primitive.BooleanFunction;
@@ -106,19 +103,7 @@ public interface MutableList<T>
 
     <V> MutableList<V> flatCollect(Function<? super T, ? extends Iterable<V>> function);
 
-    /**
-     * Returns a new {@code ListIterable} containing the distinct elements in this list.
-     *
-     * @since 7.0
-     */
     MutableList<T> distinct();
-
-    /**
-     * Returns a new {@code ListIterable} containing the distinct elements in this list. Takes HashingStrategy.
-     *
-     * @since 7.0
-     */
-    MutableList<T> distinct(HashingStrategy<? super T> hashingStrategy);
 
     /**
      * Sorts the internal data structure of this list and returns the list itself as a convenience.
@@ -221,8 +206,4 @@ public interface MutableList<T>
      * Mutates the current list by reversing its order and returns the current list as a result
      */
     MutableList<T> reverseThis();
-
-    MutableList<T> shuffleThis();
-
-    MutableList<T> shuffleThis(Random rnd);
 }

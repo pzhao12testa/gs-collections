@@ -48,7 +48,6 @@ import com.gs.collections.api.list.primitive.ShortList;
 import com.gs.collections.api.map.MapIterable;
 import com.gs.collections.api.map.sorted.SortedMapIterable;
 import com.gs.collections.api.multimap.sortedbag.SortedBagMultimap;
-import com.gs.collections.api.ordered.ReversibleIterable;
 import com.gs.collections.api.ordered.SortedIterable;
 import com.gs.collections.api.partition.bag.sorted.PartitionSortedBag;
 import com.gs.collections.api.set.sorted.SortedSetIterable;
@@ -60,7 +59,7 @@ import com.gs.collections.api.tuple.Pair;
  * @since 4.2
  */
 public interface SortedBag<T>
-        extends Bag<T>, Comparable<SortedBag<T>>, SortedIterable<T>, ReversibleIterable<T>
+        extends Bag<T>, Comparable<SortedBag<T>>, SortedIterable<T>
 {
     SortedBag<T> selectByOccurrences(IntPredicate predicate);
 
@@ -167,10 +166,4 @@ public interface SortedBag<T>
     Comparator<? super T> comparator();
 
     SortedSetIterable<Pair<T, Integer>> zipWithIndex();
-
-    SortedBag<T> toReversed();
-
-    SortedBag<T> take(int count);
-
-    SortedBag<T> drop(int count);
 }

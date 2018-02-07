@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Goldman Sachs.
+ * Copyright 2014 Goldman Sachs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,10 @@
 package com.gs.collections.impl.block.factory;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Map;
 
 import com.gs.collections.api.block.function.Function;
-import com.gs.collections.api.block.function.primitive.DoubleFunction;
 import com.gs.collections.api.block.function.primitive.IntFunction;
 import com.gs.collections.api.block.function.primitive.LongFunction;
 import com.gs.collections.api.block.function.primitive.ShortFunction;
@@ -44,7 +44,7 @@ import com.gs.collections.impl.tuple.Tuples;
 import org.junit.Assert;
 import org.junit.Test;
 
-import static com.gs.collections.impl.factory.Iterables.iList;
+import static com.gs.collections.impl.factory.Iterables.*;
 
 public class FunctionsTest
 {
@@ -101,7 +101,6 @@ public class FunctionsTest
     {
         Function<Integer, Integer> function = Functions.getIntegerPassThru();
         Assert.assertEquals(Integer.valueOf(1), function.valueOf(1));
-        Assert.assertEquals("IntegerPassThruFunction", function.toString());
     }
 
     @Test
@@ -109,8 +108,6 @@ public class FunctionsTest
     {
         Function<Long, Long> function = Functions.getLongPassThru();
         Assert.assertEquals(Long.valueOf(1), function.valueOf(1L));
-        Assert.assertEquals(Long.valueOf(1L), Long.valueOf(((LongFunction<Long>) function).longValueOf(1L)));
-        Assert.assertEquals("LongPassThruFunction", function.toString());
     }
 
     @Test
@@ -118,8 +115,6 @@ public class FunctionsTest
     {
         Function<Double, Double> function = Functions.getDoublePassThru();
         Assert.assertEquals(Double.valueOf(1).doubleValue(), function.valueOf(1.0).doubleValue(), 0.0);
-        Assert.assertEquals(Double.valueOf(1).doubleValue(), ((DoubleFunction<Double>) function).doubleValueOf(1.0), 0.0);
-        Assert.assertEquals("DoublePassThruFunction", function.toString());
     }
 
     @Test
@@ -161,38 +156,27 @@ public class FunctionsTest
     @Test
     public void firstNotNullValue()
     {
-        Function<Object, Integer> function1 =
+        Function<Object, Integer> function =
                 Functions.firstNotNullValue(Functions.<Object, Integer>getFixedValue(null), Functions.getFixedValue(1), Functions.getFixedValue(2));
-        Assert.assertEquals(Integer.valueOf(1), function1.valueOf(null));
-        Function<Object, Integer> function2 =
-                Functions.firstNotNullValue(Functions.<Object, Integer>getFixedValue(null), Functions.getFixedValue(null));
-        Assert.assertNull(function2.valueOf(null));
+        Assert.assertEquals(Integer.valueOf(1), function.valueOf(null));
     }
 
     @Test
     public void firstNotEmptyStringValue()
     {
-        Function<Object, String> function1 =
+        Function<Object, String> function =
                 Functions.firstNotEmptyStringValue(Functions.getFixedValue(""), Functions.getFixedValue("hello"), Functions.getFixedValue(""));
-        Assert.assertEquals("hello", function1.valueOf(null));
-        Function<Object, String> function2 =
-                Functions.firstNotEmptyStringValue(Functions.getFixedValue(""), Functions.getFixedValue(""));
-        Assert.assertNull(function2.valueOf(null));
+        Assert.assertEquals("hello", function.valueOf(null));
     }
 
     @Test
     public void firstNotEmptyCollectionValue()
     {
-        Function<Object, ImmutableList<String>> function1 = Functions.firstNotEmptyCollectionValue(
+        Function<Object, ImmutableList<String>> function = Functions.firstNotEmptyCollectionValue(
                 Functions.getFixedValue(Lists.immutable.<String>of()),
                 Functions.getFixedValue(Lists.immutable.of("hello")),
                 Functions.getFixedValue(Lists.immutable.<String>of()));
-        Assert.assertEquals(iList("hello"), function1.valueOf(null));
-
-        Function<Object, ImmutableList<String>> function2 = Functions.firstNotEmptyCollectionValue(
-                Functions.getFixedValue(Lists.immutable.<String>of()),
-                Functions.getFixedValue(Lists.immutable.<String>of()));
-        Assert.assertNull(function2.valueOf(null));
+        Assert.assertEquals(iList("hello"), function.valueOf(null));
     }
 
     @Test
@@ -210,16 +194,6 @@ public class FunctionsTest
         String result2 = "2";
         Assert.assertSame(result1, Functions.ifElse(Predicates.alwaysTrue(), Functions.getFixedValue(result1), Functions.getFixedValue(result2)).valueOf(null));
         Assert.assertSame(result2, Functions.ifElse(Predicates.alwaysFalse(), Functions.getFixedValue(result1), Functions.getFixedValue(result2)).valueOf(null));
-        Verify.assertContains("IfFunction", Functions.ifElse(Predicates.alwaysTrue(), Functions.getFixedValue(result1), Functions.getFixedValue(result2)).toString());
-    }
-
-    @Test
-    public void synchronizedEach()
-    {
-        Function<Integer, String> function = Functions.synchronizedEach(Object::toString);
-        Verify.assertSetsEqual(
-                UnifiedSet.newSetWith("1", "2", "3"),
-                UnifiedSet.newSetWith(1, 2, 3).collect(function));
     }
 
     @Test
@@ -422,7 +396,8 @@ public class FunctionsTest
     @Test
     public void intValueFunctionToComparator()
     {
-        MutableList<Integer> list = Interval.oneTo(100).toList().shuffleThis();
+        MutableList<Integer> list = Interval.oneTo(100).toList();
+        Collections.shuffle(list);
         Function<Integer, Integer> function = Integer::intValue;
         list.sortThis(Comparators.byFunction(function));
         Assert.assertEquals(Interval.oneTo(100).toList(), list);
@@ -431,7 +406,8 @@ public class FunctionsTest
     @Test
     public void doubleValueFunctionToComparator()
     {
-        MutableList<Double> list = FastList.newListWith(5.0, 4.0, 3.0, 2.0, 1.0).shuffleThis();
+        MutableList<Double> list = FastList.newListWith(5.0, 4.0, 3.0, 2.0, 1.0);
+        Collections.shuffle(list);
         Function<Double, Double> function = Double::doubleValue;
         list.sortThis(Comparators.byFunction(function));
         Assert.assertEquals(FastList.newListWith(1.0, 2.0, 3.0, 4.0, 5.0), list);
@@ -440,7 +416,8 @@ public class FunctionsTest
     @Test
     public void longValueFunctionToComparator()
     {
-        MutableList<Long> list = FastList.newListWith(5L, 4L, 3L, 2L, 1L).shuffleThis();
+        MutableList<Long> list = FastList.newListWith(5L, 4L, 3L, 2L, 1L);
+        Collections.shuffle(list);
         list.sortThis(Comparators.byFunction(new LongFunctionImpl<Long>()
         {
             public long longValueOf(Long each)
@@ -469,6 +446,11 @@ public class FunctionsTest
         Assert.assertEquals("stringToInteger", Functions.getStringToInteger().toString());
     }
 
+    @Test
+    public void longValue()
+    {
+        Assert.assertEquals("LongPassThruFunction", Functions.getLongPassThru().toString());
+    }
 
     @Test
     public void pair()
@@ -562,18 +544,6 @@ public class FunctionsTest
         MutableList<Pair<String, Integer>> expected = FastList.<Pair<String, Integer>>newListWith(Tuples.pair("One", 1), Tuples.pair("Two", 2), Tuples.pair("Three", 3), Tuples.pair("Four", 4));
 
         Assert.assertEquals(expected, actual);
-    }
-
-    @Test
-    public void getTrue()
-    {
-        Assert.assertTrue(Functions.getTrue().valueOf(false));
-    }
-
-    @Test
-    public void getFalse()
-    {
-        Assert.assertFalse(Functions.getFalse().valueOf(true));
     }
 
     private static class ThrowsFunction implements Function<Object, Object>

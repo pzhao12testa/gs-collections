@@ -44,9 +44,6 @@ import com.gs.collections.impl.factory.Lists;
 import com.gs.collections.impl.list.mutable.FastList;
 import com.gs.collections.impl.map.mutable.UnifiedMap;
 import com.gs.collections.impl.set.mutable.UnifiedSet;
-import com.gs.collections.impl.string.immutable.CharAdapter;
-import com.gs.collections.impl.string.immutable.CodePointAdapter;
-import com.gs.collections.impl.string.immutable.CodePointList;
 import com.gs.collections.impl.tuple.Tuples;
 
 /**
@@ -60,30 +57,6 @@ public final class StringIterate
     private StringIterate()
     {
         throw new AssertionError("Suppress default constructor for noninstantiability");
-    }
-
-    /**
-     * @since 7.0.
-     */
-    public static CharAdapter asCharAdapter(String string)
-    {
-        return CharAdapter.adapt(string);
-    }
-
-    /**
-     * @since 7.0.
-     */
-    public static CodePointAdapter asCodePointAdapter(String string)
-    {
-        return CodePointAdapter.adapt(string);
-    }
-
-    /**
-     * @since 7.0.
-     */
-    public static CodePointList toCodePointList(String string)
-    {
-        return CodePointList.from(string);
     }
 
     /**
@@ -332,7 +305,7 @@ public final class StringIterate
     @Deprecated
     public static void forEach(String string, final com.gs.collections.impl.block.procedure.primitive.CharProcedure procedure)
     {
-        StringIterate.forEachChar(string, new CharProcedure()
+        StringIterate.forEach(string, new CharProcedure()
         {
             public void value(char each)
             {
@@ -343,21 +316,8 @@ public final class StringIterate
 
     /**
      * For each character in the {@code string}, execute the {@link CharProcedure}.
-     *
-     * @deprecated since 7.0. Use {@link #forEachChar(String, CharProcedure)} instead.
      */
-    @Deprecated
     public static void forEach(String string, CharProcedure procedure)
-    {
-        StringIterate.forEachChar(string, procedure);
-    }
-
-    /**
-     * For each char in the {@code string}, execute the {@link CharProcedure}.
-     *
-     * @since 7.0
-     */
-    public static void forEachChar(String string, CharProcedure procedure)
     {
         int size = string.length();
         for (int i = 0; i < size; i++)
@@ -367,49 +327,21 @@ public final class StringIterate
     }
 
     /**
-     * For each int code point in the {@code string}, execute the {@link CodePointProcedure}.
-     *
-     * @deprecated since 7.0. Use {@link #forEachCodePoint(String, CodePointProcedure)} instead.
+     * For each character in the {@code string}, execute the {@link CodePointProcedure}.
      */
-    @Deprecated
     public static void forEach(String string, CodePointProcedure procedure)
     {
-        StringIterate.forEachCodePoint(string, procedure);
-    }
-
-    /**
-     * For each int code point in the {@code string}, execute the {@link CodePointProcedure}.
-     *
-     * @since 7.0
-     */
-    public static void forEachCodePoint(String string, CodePointProcedure procedure)
-    {
         int size = string.length();
-        for (int i = 0; i < size; )
+        for (int i = 0; i < size; i++)
         {
-            int codePoint = string.codePointAt(i);
-            procedure.value(codePoint);
-            i += Character.charCount(codePoint);
+            procedure.value(string.codePointAt(i));
         }
     }
 
     /**
-     * For each char in the {@code string} in reverse order, execute the {@link CharProcedure}.
-     *
-     * @deprecated since 7.0. Use {@link #reverseForEachChar(String, CharProcedure)} instead.
+     * For each character in the {@code string} in reverse order, execute the {@link CharProcedure}.
      */
-    @Deprecated
     public static void reverseForEach(String string, CharProcedure procedure)
-    {
-        StringIterate.reverseForEachChar(string, procedure);
-    }
-
-    /**
-     * For each char in the {@code string} in reverse order, execute the {@link CharProcedure}.
-     *
-     * @since 7.0
-     */
-    public static void reverseForEachChar(String string, CharProcedure procedure)
     {
         for (int i = string.length() - 1; i >= 0; i--)
         {
@@ -418,62 +350,15 @@ public final class StringIterate
     }
 
     /**
-     * For each int code point in the {@code string} in reverse order, execute the {@link CodePointProcedure}.
-     *
-     * @deprecated since 7.0. Use {@link #reverseForEachCodePoint(String, CodePointProcedure)} instead.
+     * For each character in the {@code string} in reverse order, execute the {@link CodePointProcedure}.
      */
-    @Deprecated
     public static void reverseForEach(String string, CodePointProcedure procedure)
     {
-        StringIterate.reverseForEachCodePoint(string, procedure);
-    }
-
-    /**
-     * For each int code point in the {@code string} in reverse order, execute the {@link CodePointProcedure}.
-     *
-     * @since 7.0
-     */
-    public static void reverseForEachCodePoint(String string, CodePointProcedure procedure)
-    {
-        for (int i = StringIterate.lastIndex(string); i >= 0; )
+        for (int i = string.length() - 1; i >= 0; i--)
         {
-            int codePoint = string.codePointAt(i);
-            procedure.value(codePoint);
-            if (i == 0)
-            {
-                i--;
-            }
-            else
-            {
-                i -= StringIterate.numberOfChars(string, i);
-            }
+            procedure.value(string.codePointAt(i));
         }
     }
-
-    private static int lastIndex(String string)
-    {
-        if (StringIterate.isEmpty(string))
-        {
-            return -1;
-        }
-        int size = string.length();
-        if (size > 1)
-        {
-            return size - StringIterate.numberOfChars(string, size);
-        }
-        return 0;
-    }
-
-    public static int numberOfChars(String string, int i)
-    {
-        return StringIterate.isSurrogate(string, i) ? 2 : 1;
-    }
-
-    public static boolean isSurrogate(String string, int i)
-    {
-        return Character.isLowSurrogate(string.charAt(i - 1)) && Character.isHighSurrogate(string.charAt(i - 2));
-    }
-
 
     /**
      * Count the number of elements that return true for the specified {@code predicate}.
@@ -483,7 +368,7 @@ public final class StringIterate
     @Deprecated
     public static int count(String string, final com.gs.collections.impl.block.predicate.primitive.CharPredicate predicate)
     {
-        return StringIterate.countChar(string, new CharPredicate()
+        return StringIterate.count(string, new CharPredicate()
         {
             public boolean accept(char value)
             {
@@ -494,21 +379,8 @@ public final class StringIterate
 
     /**
      * Count the number of elements that return true for the specified {@code predicate}.
-     *
-     * @deprecated since 7.0. Use {@link #countChar(String, CharPredicate)} instead.
      */
-    @Deprecated
     public static int count(String string, CharPredicate predicate)
-    {
-        return StringIterate.countChar(string, predicate);
-    }
-
-    /**
-     * Count the number of elements that return true for the specified {@code predicate}.
-     *
-     * @since 7.0
-     */
-    public static int countChar(String string, CharPredicate predicate)
     {
         int count = 0;
         int size = string.length();
@@ -524,32 +396,17 @@ public final class StringIterate
 
     /**
      * Count the number of elements that return true for the specified {@code predicate}.
-     *
-     * @deprecated since 7.0. Use {@link #countCodePoint(String, CodePointPredicate)} instead.
      */
-    @Deprecated
     public static int count(String string, CodePointPredicate predicate)
-    {
-        return StringIterate.countCodePoint(string, predicate);
-    }
-
-    /**
-     * Count the number of elements that return true for the specified {@code predicate}.
-     *
-     * @since 7.0
-     */
-    public static int countCodePoint(String string, CodePointPredicate predicate)
     {
         int count = 0;
         int size = string.length();
-        for (int i = 0; i < size; )
+        for (int i = 0; i < size; i++)
         {
-            int codePoint = string.codePointAt(i);
-            if (predicate.accept(codePoint))
+            if (predicate.accept(string.codePointAt(i)))
             {
                 count++;
             }
-            i += Character.charCount(codePoint);
         }
         return count;
     }
@@ -560,7 +417,7 @@ public final class StringIterate
     @Deprecated
     public static String collect(String string, final CharFunction function)
     {
-        return StringIterate.collectChar(string, new CharToCharFunction()
+        return StringIterate.collect(string, new CharToCharFunction()
         {
             public char valueOf(char charParameter)
             {
@@ -569,23 +426,7 @@ public final class StringIterate
         });
     }
 
-    /**
-     * Transform the char elements to a new string using the specified function {@code function}.
-     *
-     * @deprecated since 7.0. Use {@link #collectChar(String, CharToCharFunction)} instead.
-     */
-    @Deprecated
     public static String collect(String string, CharToCharFunction function)
-    {
-        return StringIterate.collectChar(string, function);
-    }
-
-    /**
-     * Transform the char elements to a new string using the specified function {@code function}.
-     *
-     * @since 7.0
-     */
-    public static String collectChar(String string, CharToCharFunction function)
     {
         int size = string.length();
         StringBuilder builder = new StringBuilder(size);
@@ -596,70 +437,39 @@ public final class StringIterate
         return builder.toString();
     }
 
-    /**
-     * Transform the int code point elements to a new string using the specified function {@code function}.
-     *
-     * @deprecated since 7.0. Use {@link #collectCodePoint(String, CodePointFunction)} instead.
-     */
-    @Deprecated
     public static String collect(String string, CodePointFunction function)
-    {
-        return StringIterate.collectCodePoint(string, function);
-    }
-
-    /**
-     * Transform the int code point elements to a new string using the specified function {@code function}.
-     *
-     * @since 7.0
-     */
-    public static String collectCodePoint(String string, CodePointFunction function)
     {
         int size = string.length();
         StringBuilder builder = new StringBuilder(size);
-        for (int i = 0; i < size; )
+        for (int i = 0; i < size; i++)
         {
-            int codePoint = string.codePointAt(i);
-            builder.appendCodePoint(function.valueOf(codePoint));
-            i += Character.charCount(codePoint);
+            builder.appendCodePoint(function.valueOf(string.codePointAt(i)));
         }
         return builder.toString();
     }
 
     public static String englishToUpperCase(String string)
     {
-        if (StringIterate.anySatisfyChar(string, CharPredicates.isLowerCase()))
+        if (StringIterate.anySatisfy(string, CharPredicates.isLowerCase()))
         {
-            return StringIterate.collectChar(string, CharToCharFunctions.toUpperCase());
+            return StringIterate.collect(string, CharToCharFunctions.toUpperCase());
         }
         return string;
     }
 
     public static String englishToLowerCase(String string)
     {
-        if (StringIterate.anySatisfyChar(string, CharPredicates.isUpperCase()))
+        if (StringIterate.anySatisfy(string, CharPredicates.isUpperCase()))
         {
-            return StringIterate.collectChar(string, CharToCharFunctions.toLowerCase());
+            return StringIterate.collect(string, CharToCharFunctions.toLowerCase());
         }
         return string;
     }
 
     /**
      * Find the first element that returns true for the specified {@code predicate}.
-     *
-     * @deprecated since 7.0. Use {@link #detectChar(String, CharPredicate)} instead.
      */
-    @Deprecated
     public static Character detect(String string, CharPredicate predicate)
-    {
-        return StringIterate.detectChar(string, predicate);
-    }
-
-    /**
-     * Find the first element that returns true for the specified {@code predicate}.
-     *
-     * @since 7.0
-     */
-    public static Character detectChar(String string, CharPredicate predicate)
     {
         int size = string.length();
         for (int i = 0; i < size; i++)
@@ -676,66 +486,29 @@ public final class StringIterate
     /**
      * Find the first element that returns true for the specified {@code predicate}.  Return the default char if
      * no value is found.
-     *
-     * @deprecated since 7.0. Use {@link #detectCharIfNone(String, CharPredicate, char)} instead.
      */
-    @Deprecated
     public static Character detectIfNone(String string, CharPredicate predicate, char resultIfNone)
     {
-        return StringIterate.detectCharIfNone(string, predicate, resultIfNone);
-    }
-
-    /**
-     * Find the first element that returns true for the specified {@code predicate}.  Return the default char if
-     * no value is found.
-     */
-    public static Character detectCharIfNone(String string, CharPredicate predicate, char resultIfNone)
-    {
-        Character result = StringIterate.detectChar(string, predicate);
+        Character result = StringIterate.detect(string, predicate);
         return result == null ? Character.valueOf(resultIfNone) : result;
     }
 
     /**
      * Find the first element that returns true for the specified {@code predicate}.  Return the first char of the
      * default string if no value is found.
-     *
-     * @deprecated since 7.0. Use {@link #detectCharIfNone(String, CharPredicate, String)} instead.
      */
-    @Deprecated
     public static Character detectIfNone(String string, CharPredicate predicate, String resultIfNone)
     {
-        return StringIterate.detectCharIfNone(string, predicate, resultIfNone);
-    }
-
-    /**
-     * Find the first element that returns true for the specified {@code predicate}.  Return the first char of the
-     * default string if no value is found.
-     */
-    public static Character detectCharIfNone(String string, CharPredicate predicate, String resultIfNone)
-    {
-        Character result = StringIterate.detectChar(string, predicate);
+        Character result = StringIterate.detect(string, predicate);
         return result == null ? Character.valueOf(resultIfNone.charAt(0)) : result;
     }
 
     /**
      * Count the number of occurrences of the specified char.
-     *
-     * @deprecated since 7.0. Use {@link #occurrencesOfChar(String, char)} instead.
      */
-    @Deprecated
-    public static int occurrencesOf(String string, char value)
+    public static int occurrencesOf(String string, final char value)
     {
-        return StringIterate.occurrencesOfChar(string, value);
-    }
-
-    /**
-     * Count the number of occurrences of the specified char.
-     *
-     * @since 7.0
-     */
-    public static int occurrencesOfChar(String string, final char value)
-    {
-        return StringIterate.countChar(string, new CharPredicate()
+        return StringIterate.count(string, new CharPredicate()
         {
             public boolean accept(char character)
             {
@@ -745,24 +518,11 @@ public final class StringIterate
     }
 
     /**
-     * Count the number of occurrences of the specified int code point.
-     *
-     * @deprecated since 7.0. Use {@link #occurrencesOfCodePoint(String, int)} instead.
+     * Count the number of occurrences of the specified code point.
      */
-    @Deprecated
-    public static int occurrencesOf(String string, int value)
+    public static int occurrencesOf(String string, final int value)
     {
-        return StringIterate.occurrencesOfCodePoint(string, value);
-    }
-
-    /**
-     * Count the number of occurrences of the specified int code point.
-     *
-     * @since 7.0
-     */
-    public static int occurrencesOfCodePoint(String string, final int value)
-    {
-        return StringIterate.countCodePoint(string, new CodePointPredicate()
+        return StringIterate.count(string, new CodePointPredicate()
         {
             public boolean accept(int codePoint)
             {
@@ -780,25 +540,13 @@ public final class StringIterate
         {
             throw new IllegalArgumentException("Argument should be a single character: " + singleCharacter);
         }
-        return StringIterate.occurrencesOfChar(string, singleCharacter.charAt(0));
+        return StringIterate.occurrencesOf(string, singleCharacter.charAt(0));
     }
 
     /**
      * @return true if any of the characters in the {@code string} answer true for the specified {@code predicate}.
-     *
-     * @deprecated since 7.0. Use {@link #anySatisfyChar(String, CharPredicate)} instead.
      */
-    @Deprecated
     public static boolean anySatisfy(String string, CharPredicate predicate)
-    {
-        return StringIterate.anySatisfyChar(string, predicate);
-    }
-
-    /**
-     * @return true if any of the characters in the {@code string} answer true for the specified {@code predicate}.
-     * @since 7.0
-     */
-    public static boolean anySatisfyChar(String string, CharPredicate predicate)
     {
         int size = string.length();
         for (int i = 0; i < size; i++)
@@ -813,52 +561,24 @@ public final class StringIterate
 
     /**
      * @return true if any of the code points in the {@code string} answer true for the specified {@code predicate}.
-     *
-     * @deprecated since 7.0. Use {@link #anySatisfyCodePoint(String, CodePointPredicate)} instead.
      */
-    @Deprecated
     public static boolean anySatisfy(String string, CodePointPredicate predicate)
     {
-        return StringIterate.anySatisfyCodePoint(string, predicate);
-    }
-
-    /**
-     * @return true if any of the code points in the {@code string} answer true for the specified {@code predicate}.
-     *
-     * @since 7.0
-     */
-    public static boolean anySatisfyCodePoint(String string, CodePointPredicate predicate)
-    {
         int size = string.length();
-        for (int i = 0; i < size; )
+        for (int i = 0; i < size; i++)
         {
-            int codePoint = string.codePointAt(i);
-            if (predicate.accept(codePoint))
+            if (predicate.accept(string.codePointAt(i)))
             {
                 return true;
             }
-            i += Character.charCount(codePoint);
         }
         return false;
     }
 
     /**
      * @return true if all of the characters in the {@code string} answer true for the specified {@code predicate}.
-     *
-     * @deprecated since 7.0. Use {@link #allSatisfyChar(String, CharPredicate)} instead.
      */
-    @Deprecated
     public static boolean allSatisfy(String string, CharPredicate predicate)
-    {
-        return StringIterate.allSatisfyChar(string, predicate);
-    }
-
-    /**
-     * @return true if all of the characters in the {@code string} answer true for the specified {@code predicate}.
-     *
-     * @since 7.0
-     */
-    public static boolean allSatisfyChar(String string, CharPredicate predicate)
     {
         int size = string.length();
         for (int i = 0; i < size; i++)
@@ -873,52 +593,24 @@ public final class StringIterate
 
     /**
      * @return true if all of the code points in the {@code string} answer true for the specified {@code predicate}.
-     *
-     * @deprecated since 7.0. Use {@link #allSatisfyCodePoint(String, CodePointPredicate)} instead.
      */
-    @Deprecated
     public static boolean allSatisfy(String string, CodePointPredicate predicate)
     {
-        return StringIterate.allSatisfyCodePoint(string, predicate);
-    }
-
-    /**
-     * @return true if all of the code points in the {@code string} answer true for the specified {@code predicate}.
-     *
-     * @since 7.0
-     */
-    public static boolean allSatisfyCodePoint(String string, CodePointPredicate predicate)
-    {
         int size = string.length();
-        for (int i = 0; i < size; )
+        for (int i = 0; i < size; i++)
         {
-            int codePoint = string.codePointAt(i);
-            if (!predicate.accept(codePoint))
+            if (!predicate.accept(string.codePointAt(i)))
             {
                 return false;
             }
-            i += Character.charCount(codePoint);
         }
         return true;
     }
 
     /**
      * @return true if none of the characters in the {@code string} answer true for the specified {@code predicate}.
-     *
-     * @deprecated since 7.0. Use {@link #noneSatisfyChar(String, CharPredicate)} instead.
      */
-    @Deprecated
     public static boolean noneSatisfy(String string, CharPredicate predicate)
-    {
-        return StringIterate.noneSatisfyChar(string, predicate);
-    }
-
-    /**
-     * @return true if none of the characters in the {@code string} answer true for the specified {@code predicate}.
-     *
-     * @since 7.0
-     */
-    public static boolean noneSatisfyChar(String string, CharPredicate predicate)
     {
         int size = string.length();
         for (int i = 0; i < size; i++)
@@ -933,52 +625,24 @@ public final class StringIterate
 
     /**
      * @return true if none of the code points in the {@code string} answer true for the specified {@code predicate}.
-     *
-     * @deprecated since 7.0. Use {@link #noneSatisfyCodePoint(String, CodePointPredicate)} instead.
      */
-    @Deprecated
     public static boolean noneSatisfy(String string, CodePointPredicate predicate)
     {
-        return StringIterate.noneSatisfyCodePoint(string, predicate);
-    }
-
-    /**
-     * @return true if none of the code points in the {@code string} answer true for the specified {@code predicate}.
-     *
-     * @since 7.0
-     */
-    public static boolean noneSatisfyCodePoint(String string, CodePointPredicate predicate)
-    {
         int size = string.length();
-        for (int i = 0; i < size; )
+        for (int i = 0; i < size; i++)
         {
-            int codePoint = string.codePointAt(i);
-            if (predicate.accept(codePoint))
+            if (predicate.accept(string.codePointAt(i)))
             {
                 return false;
             }
-            i += Character.charCount(codePoint);
         }
         return true;
     }
 
     /**
      * @return a new string with all of the characters that return true for the specified {@code predicate}.
-     *
-     * @deprecated since 7.0. Use {@link #selectChar(String, CharPredicate)} instead.
      */
-    @Deprecated
     public static String select(String string, CharPredicate predicate)
-    {
-        return StringIterate.selectChar(string, predicate);
-    }
-
-    /**
-     * @return a new string with all of the characters that return true for the specified {@code predicate}.
-     *
-     * @since 7.0
-     */
-    public static String selectChar(String string, CharPredicate predicate)
     {
         int size = string.length();
         StringBuilder buffer = new StringBuilder(string.length());
@@ -995,53 +659,26 @@ public final class StringIterate
 
     /**
      * @return a new string with all of the code points that return true for the specified {@code predicate}.
-     *
-     * @deprecated since 7.0. Use {@link #selectCodePoint(String, CodePointPredicate)} instead.
      */
-    @Deprecated
     public static String select(String string, CodePointPredicate predicate)
-    {
-        return StringIterate.selectCodePoint(string, predicate);
-    }
-
-    /**
-     * @return a new string with all of the code points that return true for the specified {@code predicate}.
-     *
-     * @since 7.0
-     */
-    public static String selectCodePoint(String string, CodePointPredicate predicate)
     {
         int size = string.length();
         StringBuilder buffer = new StringBuilder(string.length());
-        for (int i = 0; i < size; )
+        for (int i = 0; i < size; i++)
         {
             int codePoint = string.codePointAt(i);
             if (predicate.accept(codePoint))
             {
                 buffer.appendCodePoint(codePoint);
             }
-            i += Character.charCount(codePoint);
         }
         return buffer.toString();
     }
 
     /**
      * @return a new string excluding all of the characters that return true for the specified {@code predicate}.
-     *
-     * @deprecated since 7.0. Use {@link #rejectChar(String, CharPredicate)} instead.
      */
-    @Deprecated
     public static String reject(String string, CharPredicate predicate)
-    {
-        return StringIterate.rejectChar(string, predicate);
-    }
-
-    /**
-     * @return a new string excluding all of the characters that return true for the specified {@code predicate}.
-     *
-     * @since 7.0
-     */
-    public static String rejectChar(String string, CharPredicate predicate)
     {
         int size = string.length();
         StringBuilder buffer = new StringBuilder(string.length());
@@ -1058,32 +695,18 @@ public final class StringIterate
 
     /**
      * @return a new string excluding all of the code points that return true for the specified {@code predicate}.
-     *
-     * @deprecated since 7.0. Use {@link #rejectCodePoint(String, CodePointPredicate)} instead.
      */
-    @Deprecated
     public static String reject(String string, CodePointPredicate predicate)
-    {
-        return StringIterate.rejectCodePoint(string, predicate);
-    }
-
-    /**
-     * @return a new string excluding all of the code points that return true for the specified {@code predicate}.
-     *
-     * @since 7.0
-     */
-    public static String rejectCodePoint(String string, CodePointPredicate predicate)
     {
         int size = string.length();
         StringBuilder buffer = new StringBuilder(string.length());
-        for (int i = 0; i < size; )
+        for (int i = 0; i < size; i++)
         {
             int codePoint = string.codePointAt(i);
             if (!predicate.accept(codePoint))
             {
                 buffer.appendCodePoint(codePoint);
             }
-            i += Character.charCount(codePoint);
         }
         return buffer.toString();
     }
@@ -1128,7 +751,7 @@ public final class StringIterate
 
     private static boolean isWhitespace(String string)
     {
-        return StringIterate.allSatisfyCodePoint(string, CodePointPredicate.IS_WHITESPACE);
+        return StringIterate.allSatisfy(string, CodePointPredicate.IS_WHITESPACE);
     }
 
     public static boolean isNumber(String string)
@@ -1143,7 +766,7 @@ public final class StringIterate
 
     private static boolean charactersSatisfy(String string, CodePointPredicate predicate)
     {
-        return !"".equals(string) && StringIterate.allSatisfyCodePoint(string, predicate);
+        return !"".equals(string) && StringIterate.allSatisfy(string, predicate);
     }
 
     public static boolean notEmpty(String string)
@@ -1189,49 +812,49 @@ public final class StringIterate
     public static MutableList<Character> toList(String string)
     {
         MutableList<Character> characters = FastList.newList(string.length());
-        StringIterate.forEachChar(string, new AddCharacterToCollection(characters));
+        StringIterate.forEach(string, new AddCharacterToCollection(characters));
         return characters;
     }
 
     public static MutableList<Character> toLowercaseList(String string)
     {
         MutableList<Character> characters = FastList.newList();
-        StringIterate.forEachChar(string, new AddLowercaseCharacterToCollection(characters));
+        StringIterate.forEach(string, new AddLowercaseCharacterToCollection(characters));
         return characters;
     }
 
     public static MutableList<Character> toUppercaseList(String string)
     {
         MutableList<Character> characters = FastList.newList();
-        StringIterate.forEachChar(string, new AddUppercaseCharacterToCollection(characters));
+        StringIterate.forEach(string, new AddUppercaseCharacterToCollection(characters));
         return characters;
     }
 
     public static MutableBag<Character> toBag(String string)
     {
         MutableBag<Character> characters = HashBag.newBag();
-        StringIterate.forEachChar(string, new AddCharacterToCollection(characters));
+        StringIterate.forEach(string, new AddCharacterToCollection(characters));
         return characters;
     }
 
     public static MutableBag<Character> toLowercaseBag(String string)
     {
         MutableBag<Character> characters = HashBag.newBag();
-        StringIterate.forEachChar(string, new AddLowercaseCharacterToCollection(characters));
+        StringIterate.forEach(string, new AddLowercaseCharacterToCollection(characters));
         return characters;
     }
 
     public static MutableBag<Character> toUppercaseBag(String string)
     {
         MutableBag<Character> characters = HashBag.newBag();
-        StringIterate.forEachChar(string, new AddUppercaseCharacterToCollection(characters));
+        StringIterate.forEach(string, new AddUppercaseCharacterToCollection(characters));
         return characters;
     }
 
     public static MutableSet<Character> toSet(String string)
     {
         MutableSet<Character> characters = UnifiedSet.newSet();
-        StringIterate.forEachChar(string, new AddCharacterToCollection(characters));
+        StringIterate.forEach(string, new AddCharacterToCollection(characters));
         return characters;
     }
 
@@ -1281,7 +904,7 @@ public final class StringIterate
     public static MutableSet<Character> toUppercaseSet(String string)
     {
         MutableSet<Character> characters = UnifiedSet.newSet();
-        StringIterate.forEachChar(string, new AddUppercaseCharacterToCollection(characters));
+        StringIterate.forEach(string, new AddUppercaseCharacterToCollection(characters));
         return characters;
     }
 
@@ -1297,7 +920,7 @@ public final class StringIterate
     public static MutableSet<Character> toLowercaseSet(String string)
     {
         MutableSet<Character> characters = UnifiedSet.newSet();
-        StringIterate.forEachChar(string, new AddLowercaseCharacterToCollection(characters));
+        StringIterate.forEach(string, new AddLowercaseCharacterToCollection(characters));
         return characters;
     }
 

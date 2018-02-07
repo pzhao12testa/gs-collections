@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Goldman Sachs.
+ * Copyright 2014 Goldman Sachs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,20 +23,21 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.gs.collections.api.list.MutableList;
-import com.gs.collections.impl.jmh.runner.AbstractJMHTestRunner;
 import com.gs.collections.impl.list.Interval;
 import com.gs.collections.impl.list.mutable.FastList;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
+import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.OutputTimeUnit;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.State;
+import org.openjdk.jmh.annotations.Warmup;
 
 @State(Scope.Thread)
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.SECONDS)
-public class FlatCollectTest extends AbstractJMHTestRunner
+public class FlatCollectTest
 {
     private static final int COUNT = 10_000;
     private static final int LIST_SIZE = 100;
@@ -49,12 +50,8 @@ public class FlatCollectTest extends AbstractJMHTestRunner
         List<Integer> flatMap = this.integersJDK.stream().flatMap(Collection::stream).collect(Collectors.toList());
     }
 
-    @Benchmark
-    public void serial_lazy_streams_gsc()
-    {
-        List<Integer> flatMap = this.integersGSC.stream().flatMap(Collection::stream).collect(Collectors.toList());
-    }
-
+    @Warmup(iterations = 20)
+    @Measurement(iterations = 10)
     @Benchmark
     public void serial_eager_gsc()
     {

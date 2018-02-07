@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Goldman Sachs.
+ * Copyright 2014 Goldman Sachs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.gs.collections.api.list.MutableList;
-import com.gs.collections.impl.jmh.runner.AbstractJMHTestRunner;
 import com.gs.collections.impl.list.mutable.FastList;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
@@ -39,7 +38,7 @@ import org.openjdk.jmh.annotations.TearDown;
 @State(Scope.Thread)
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.SECONDS)
-public class SumOfDoubleTest extends AbstractJMHTestRunner
+public class SumOfDoubleTest
 {
     private static final int SIZE = 3_000_000;
     private static final int BATCH_SIZE = 10_000;
@@ -70,21 +69,9 @@ public class SumOfDoubleTest extends AbstractJMHTestRunner
     }
 
     @Benchmark
-    public double serial_lazy_collectDoubleSum_streams_gsc()
-    {
-        return this.doublesGSC.stream().mapToDouble(each -> each).sum();
-    }
-
-    @Benchmark
     public double parallel_lazy_collectDoubleSum_jdk()
     {
         return this.doublesJDK.parallelStream().mapToDouble(each -> each).sum();
-    }
-
-    @Benchmark
-    public double parallel_lazy_collectDoubleSum_streams_gsc()
-    {
-        return this.doublesGSC.parallelStream().mapToDouble(each -> each).sum();
     }
 
     @Benchmark

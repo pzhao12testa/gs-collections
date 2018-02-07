@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Goldman Sachs.
+ * Copyright 2014 Goldman Sachs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package com.gs.collections.impl.list.mutable;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.ListIterator;
 import java.util.RandomAccess;
@@ -103,7 +104,8 @@ public class CompositeFastListTest extends AbstractListTestCase
     @Test
     public void parallelBatchForEach()
     {
-        MutableList<Integer> integers = Interval.oneTo(1_000_000).toList().shuffleThis();
+        MutableList<Integer> integers = Interval.oneTo(1_000_000).toList();
+        Collections.shuffle(integers);
 
         Collection<Integer> evens = ParallelIterate.select(integers, IntegerPredicates.isEven());
         Verify.assertInstanceOf(CompositeFastList.class, evens);
@@ -125,7 +127,8 @@ public class CompositeFastListTest extends AbstractListTestCase
         Verify.assertSize(50_000, oddStrings);
         Assert.assertEquals(integers.select(e -> e <= 100_000).select(IntegerPredicates.isOdd()).collect(Object::toString).toList(), oddStrings);
 
-        MutableList<Integer> range = Interval.fromTo(-1_234_567, 1_234_567).toList().shuffleThis();
+        MutableList<Integer> range = Interval.fromTo(-1_234_567, 1_234_567).toList();
+        Collections.shuffle(range);
         Collection<Integer> positives = ParallelIterate.select(range, IntegerPredicates.isPositive());
         Verify.assertInstanceOf(CompositeFastList.class, positives);
         Verify.assertSize(1_234_567, positives);

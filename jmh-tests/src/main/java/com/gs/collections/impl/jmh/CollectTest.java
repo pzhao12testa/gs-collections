@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Goldman Sachs.
+ * Copyright 2014 Goldman Sachs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.gs.collections.api.list.MutableList;
-import com.gs.collections.impl.jmh.runner.AbstractJMHTestRunner;
 import com.gs.collections.impl.list.Interval;
 import com.gs.collections.impl.list.mutable.CompositeFastList;
 import com.gs.collections.impl.list.mutable.FastList;
@@ -33,17 +32,19 @@ import com.gs.collections.impl.parallel.ParallelIterate;
 import com.gs.collections.impl.test.Verify;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
+import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.OutputTimeUnit;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
+import org.openjdk.jmh.annotations.Warmup;
 
 @State(Scope.Thread)
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.SECONDS)
-public class CollectTest extends AbstractJMHTestRunner
+public class CollectTest
 {
     private static final int SIZE = 1_000_000;
     private static final int BATCH_SIZE = 10_000;
@@ -65,6 +66,8 @@ public class CollectTest extends AbstractJMHTestRunner
         this.executorService.awaitTermination(1L, TimeUnit.SECONDS);
     }
 
+    @Warmup(iterations = 20)
+    @Measurement(iterations = 10)
     @Benchmark
     public void serial_lazy_jdk()
     {
@@ -73,23 +76,9 @@ public class CollectTest extends AbstractJMHTestRunner
     }
 
     @Benchmark
-    public void serial_lazy_streams_gsc()
-    {
-        List<String> strings = this.integersGSC.stream().map(Object::toString).collect(Collectors.toList());
-        Verify.assertSize(SIZE, strings);
-    }
-
-    @Benchmark
     public void parallel_lazy_jdk()
     {
         List<String> strings = this.integersJDK.parallelStream().map(Object::toString).collect(Collectors.toList());
-        Verify.assertSize(SIZE, strings);
-    }
-
-    @Benchmark
-    public void parallel_lazy_streams_gsc()
-    {
-        List<String> strings = this.integersGSC.parallelStream().map(Object::toString).collect(Collectors.toList());
         Verify.assertSize(SIZE, strings);
     }
 
@@ -111,6 +100,8 @@ public class CollectTest extends AbstractJMHTestRunner
         CollectScalaTest.parallel_lazy_scala();
     }
 
+    @Warmup(iterations = 20)
+    @Measurement(iterations = 10)
     @Benchmark
     public void serial_eager_gsc()
     {
@@ -138,6 +129,8 @@ public class CollectTest extends AbstractJMHTestRunner
         Verify.assertSize(SIZE, strings);
     }
 
+    @Warmup(iterations = 20)
+    @Measurement(iterations = 10)
     @Benchmark
     public void serial_lazy_gsc()
     {

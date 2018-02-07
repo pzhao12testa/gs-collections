@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Goldman Sachs.
+ * Copyright 2014 Goldman Sachs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package com.gs.collections.impl.parallel;
 
 import java.text.NumberFormat;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.gs.collections.api.block.function.Function;
@@ -182,7 +183,9 @@ public class SerialParallelPerformanceTest
 
     private MutableList<Integer> getSizes()
     {
-        return FastList.newListWith(LARGE_COUNT, MEDIUM_COUNT, SMALL_COUNT).shuffleThis();
+        MutableList<Integer> sizes = FastList.newListWith(LARGE_COUNT, MEDIUM_COUNT, SMALL_COUNT);
+        Collections.shuffle(sizes);
+        return sizes;
     }
 
     private MutableList<Function0<Iterable<Integer>>> getIntegerListGenerators(int count)
@@ -190,14 +193,18 @@ public class SerialParallelPerformanceTest
         Interval interval = Interval.fromTo(-(count / 2), count / 2 - 1);
         MutableList<Function0<Iterable<Integer>>> generators = FastList.newList();
         generators.add(() -> {
-            return interval.toList().shuffleThis();
+            MutableList<Integer> integers = interval.toList();
+            Collections.shuffle(integers);
+            return integers;
         });
         generators.add(() -> {
-            MutableList<Integer> integers = interval.toList().shuffleThis();
+            MutableList<Integer> integers = interval.toList();
+            Collections.shuffle(integers);
             return integers.toImmutable();
         });
         generators.add(interval::toSet);
-        return generators.shuffleThis();
+        Collections.shuffle(generators);
+        return generators;
     }
 
     private MutableList<Function0<Iterable<String>>> getRandomWordsGenerators(int count)
@@ -206,7 +213,8 @@ public class SerialParallelPerformanceTest
         generators.add(() -> this.generateWordsList(count));
         generators.add(() -> this.generateWordsList(count).toImmutable());
         generators.add(() -> this.generateWordsSet(count));
-        return generators.shuffleThis();
+        Collections.shuffle(generators);
+        return generators;
     }
 
     private void measureAlgorithmForIntegerIterable(String algorithmName, Procedure<Function0<Iterable<Integer>>> algorithm)
@@ -283,7 +291,8 @@ public class SerialParallelPerformanceTest
 
     private void shuffleAndRun(MutableList<Runnable> runnables)
     {
-        runnables.shuffleThis().forEach(Procedures.cast(Runnable::run));
+        Collections.shuffle(runnables);
+        runnables.forEach(Procedures.cast(Runnable::run));
     }
 
     private void reject(Iterable<Integer> collection)

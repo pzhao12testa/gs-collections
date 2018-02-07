@@ -25,7 +25,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import com.gs.collections.api.RichIterable;
-import com.gs.collections.api.block.HashingStrategy;
 import com.gs.collections.api.block.function.Function;
 import com.gs.collections.api.block.function.Function0;
 import com.gs.collections.api.block.function.Function2;
@@ -552,31 +551,11 @@ public final class IterableIterate
         return IteratorIterate.injectInto(injectValue, iterable.iterator(), function);
     }
 
-    /**
-     * @deprecated in 7.0.
-     */
-    @Deprecated
-    public static <T, R extends List<T>> R distinct(
+    public static <T, R extends Collection<T>> R distinct(
             Iterable<T> iterable,
             R targetCollection)
     {
         return IteratorIterate.distinct(iterable.iterator(), targetCollection);
-    }
-
-    /**
-     * @since 7.0.
-     */
-    public static <T> MutableList<T> distinct(Iterable<T> iterable)
-    {
-        return IteratorIterate.distinct(iterable.iterator());
-    }
-
-    /**
-     * @since 7.0.
-     */
-    public static <T> MutableList<T> distinct(Iterable<T> iterable, HashingStrategy<? super T> hashingStrategy)
-    {
-        return IteratorIterate.distinct(iterable.iterator(), hashingStrategy);
     }
 
     /**
@@ -710,37 +689,31 @@ public final class IterableIterate
     /**
      * @see Iterate#removeIf(Iterable, Predicate)
      */
-    public static <T> boolean removeIf(Iterable<T> iterable, Predicate<? super T> predicate)
+    public static <T> Iterable<T> removeIf(Iterable<T> iterable, Predicate<? super T> predicate)
     {
-        return IteratorIterate.removeIf(iterable.iterator(), predicate);
+        IteratorIterate.removeIf(iterable.iterator(), predicate);
+        return iterable;
     }
 
     /**
      * @see Iterate#removeIfWith(Iterable, Predicate2, Object)
      */
-    public static <T, P> boolean removeIfWith(
+    public static <T, P> Iterable<T> removeIfWith(
             Iterable<T> iterable,
             Predicate2<? super T, ? super P> predicate,
             P parameter)
     {
-        return IteratorIterate.removeIfWith(iterable.iterator(), predicate, parameter);
+        IteratorIterate.removeIfWith(iterable.iterator(), predicate, parameter);
+        return iterable;
     }
 
-    public static <T> boolean removeIf(
+    public static <T> Iterable<T> removeIf(
             Iterable<T> iterable,
             Predicate<? super T> predicate,
             Procedure<? super T> procedure)
     {
-        return IteratorIterate.removeIf(iterable.iterator(), predicate, procedure);
-    }
-
-    public static <T, P> boolean removeIfWith(
-            Iterable<T> iterable,
-            Predicate2<? super T, ? super P> predicate,
-            P parameter,
-            Procedure<? super T> procedure)
-    {
-        return IteratorIterate.removeIfWith(iterable.iterator(), predicate, parameter, procedure);
+        IteratorIterate.removeIf(iterable.iterator(), predicate, procedure);
+        return iterable;
     }
 
     /**
@@ -877,11 +850,11 @@ public final class IterableIterate
             Iterator<T> iterator = iterable.iterator();
             if (iterator.hasNext())
             {
-                appendable.append(IterableIterate.stringValueOfItem(iterable, iterator.next()));
+                appendable.append(stringValueOfItem(iterable, iterator.next()));
                 while (iterator.hasNext())
                 {
                     appendable.append(separator);
-                    appendable.append(IterableIterate.stringValueOfItem(iterable, iterator.next()));
+                    appendable.append(stringValueOfItem(iterable, iterator.next()));
                 }
             }
 

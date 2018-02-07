@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Goldman Sachs.
+ * Copyright 2013 Goldman Sachs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,23 +16,31 @@
 
 package com.gs.collections.impl.set.mutable
 
-import com.gs.collections.api.set.MutableSet
-import com.gs.collections.impl.MultiReaderThreadSafetyTestTrait
 import com.gs.collections.impl.Prelude._
+import com.gs.collections.api.set.MutableSet
+import com.gs.collections.impl.ThreadSafetyTestTrait
 
-trait MultiReaderUnifiedSetTestTrait extends MultiReaderThreadSafetyTestTrait
+trait MultiReaderUnifiedSetTestTrait extends ThreadSafetyTestTrait
 {
-    val classUnderTest: MultiReaderUnifiedSet[Int]
+    val classUnderTest: MultiReaderUnifiedSet[_]
 
     def createReadLockHolderThread(gate: Gate): Thread =
+    {
         spawn
         {
-            this.classUnderTest.withReadLockAndDelegate((_: MutableSet[_]) => sleep(gate))
+            this.classUnderTest.withReadLockAndDelegate({
+                _: MutableSet[_] => sleep(gate)
+            })
         }
+    }
 
     def createWriteLockHolderThread(gate: Gate): Thread =
+    {
         spawn
         {
-            this.classUnderTest.withWriteLockAndDelegate((_: MutableSet[_]) => sleep(gate))
+            this.classUnderTest.withWriteLockAndDelegate({
+                _: MutableSet[_] => sleep(gate)
+            })
         }
+    }
 }

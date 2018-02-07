@@ -19,7 +19,6 @@ package com.gs.collections.impl.jmh.map;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
-import com.gs.collections.impl.jmh.runner.AbstractJMHTestRunner;
 import net.openhft.koloboke.collect.map.ObjObjMap;
 import net.openhft.koloboke.collect.map.hash.HashObjObjMaps;
 import org.apache.commons.lang.RandomStringUtils;
@@ -35,7 +34,7 @@ import org.openjdk.jmh.annotations.State;
 @State(Scope.Thread)
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.SECONDS)
-public class KolobokeMapPutTest extends AbstractJMHTestRunner
+public class KolobokeMapPutTest
 {
     private static final int RANDOM_COUNT = 9;
 
@@ -70,7 +69,6 @@ public class KolobokeMapPutTest extends AbstractJMHTestRunner
         String[] localElements = this.elements;
 
         ObjObjMap<String, String> koloboke = this.isPresized ? HashObjObjMaps.newMutableMap(localSize) : HashObjObjMaps.newMutableMap();
-
         for (int i = 0; i < localSize; i++)
         {
             koloboke.put(localElements[i], "dummy");

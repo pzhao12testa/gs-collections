@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Goldman Sachs.
+ * Copyright 2014 Goldman Sachs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import com.gs.collections.api.block.function.Function2;
 import com.gs.collections.api.block.predicate.Predicate2;
 import com.gs.collections.api.multimap.bag.BagMultimap;
 import com.gs.collections.api.multimap.list.ListMultimap;
-import com.gs.collections.api.multimap.ordered.ReversibleIterableMultimap;
 import com.gs.collections.api.multimap.ordered.SortedIterableMultimap;
 import com.gs.collections.api.multimap.set.SetMultimap;
 import com.gs.collections.api.set.sorted.SortedSetIterable;
@@ -31,7 +30,7 @@ import com.gs.collections.api.tuple.Pair;
  * @since 1.0
  */
 public interface SortedSetMultimap<K, V>
-        extends SetMultimap<K, V>, SortedIterableMultimap<K, V>, ReversibleIterableMultimap<K, V>
+        extends SetMultimap<K, V>, SortedIterableMultimap<K, V>
 {
     SortedSetMultimap<K, V> newEmpty();
 

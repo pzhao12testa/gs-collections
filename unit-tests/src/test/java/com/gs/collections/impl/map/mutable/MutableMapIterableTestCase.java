@@ -46,8 +46,7 @@ import com.gs.collections.impl.utility.Iterate;
 import org.junit.Assert;
 import org.junit.Test;
 
-import static com.gs.collections.impl.factory.Iterables.iMap;
-import static com.gs.collections.impl.factory.Iterables.mList;
+import static com.gs.collections.impl.factory.Iterables.*;
 
 /**
  * Abstract JUnit TestCase for {@link MutableMapIterable}s.
@@ -590,7 +589,8 @@ public abstract class MutableMapIterableTestCase extends MapIterableTestCase
     public void updateValue_collisions()
     {
         MutableMapIterable<Integer, Integer> map = this.newMap();
-        MutableList<Integer> list = Interval.oneTo(2000).toList().shuffleThis();
+        MutableList<Integer> list = Interval.oneTo(2000).toList();
+        Collections.shuffle(list);
         Iterate.forEach(list, each -> map.updateValue(each % 1000, () -> 0, integer -> integer + 1));
         Assert.assertEquals(Interval.zeroTo(999).toSet(), map.keySet());
         Assert.assertEquals(
@@ -615,7 +615,8 @@ public abstract class MutableMapIterableTestCase extends MapIterableTestCase
     public void updateValueWith_collisions()
     {
         MutableMapIterable<Integer, Integer> map = this.newMap();
-        MutableList<Integer> list = Interval.oneTo(2000).toList().shuffleThis();
+        MutableList<Integer> list = Interval.oneTo(2000).toList();
+        Collections.shuffle(list);
         Iterate.forEach(list, each -> map.updateValueWith(each % 1000, () -> 0, (integer, parameter) -> {
             Assert.assertEquals("test", parameter);
             return integer + 1;

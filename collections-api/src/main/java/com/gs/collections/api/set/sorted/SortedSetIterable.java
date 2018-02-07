@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Goldman Sachs.
+ * Copyright 2014 Goldman Sachs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,6 @@ import com.gs.collections.api.list.primitive.IntList;
 import com.gs.collections.api.list.primitive.LongList;
 import com.gs.collections.api.list.primitive.ShortList;
 import com.gs.collections.api.multimap.sortedset.SortedSetMultimap;
-import com.gs.collections.api.ordered.ReversibleIterable;
 import com.gs.collections.api.ordered.SortedIterable;
 import com.gs.collections.api.partition.set.sorted.PartitionSortedSet;
 import com.gs.collections.api.set.SetIterable;
@@ -52,7 +51,7 @@ import com.gs.collections.api.tuple.Pair;
  * An iterable whose items are unique and sorted by some comparator or their natural ordering.
  */
 public interface SortedSetIterable<T>
-        extends SetIterable<T>, Comparable<SortedSetIterable<T>>, SortedIterable<T>, ReversibleIterable<T>
+        extends SetIterable<T>, Comparable<SortedSetIterable<T>>, SortedIterable<T>
 {
     /**
      * Returns the comparator used to order the elements in this set, or null if this set uses the natural ordering of
@@ -143,12 +142,6 @@ public interface SortedSetIterable<T>
     <V> SortedSetMultimap<V, T> groupByEach(Function<? super T, ? extends Iterable<V>> function);
 
     SortedSetIterable<Pair<T, Integer>> zipWithIndex();
-
-    SortedSetIterable<T> toReversed();
-
-    SortedSetIterable<T> take(int count);
-
-    SortedSetIterable<T> drop(int count);
 
     /**
      * Converts the SortedSetIterable to an immutable implementation. Returns this for immutable sets.

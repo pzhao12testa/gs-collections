@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Goldman Sachs.
+ * Copyright 2014 Goldman Sachs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import java.util.concurrent.TimeUnit;
 
 import com.gs.collections.impl.block.factory.Procedures;
 import com.gs.collections.impl.block.procedure.CountProcedure;
-import com.gs.collections.impl.jmh.runner.AbstractJMHTestRunner;
 import com.gs.collections.impl.list.Interval;
 import com.gs.collections.impl.parallel.ParallelIterate;
 import com.gs.collections.impl.set.mutable.UnifiedSet;
@@ -32,6 +31,7 @@ import org.junit.Assert;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Level;
+import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.OutputTimeUnit;
 import org.openjdk.jmh.annotations.Param;
@@ -39,11 +39,12 @@ import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
+import org.openjdk.jmh.annotations.Warmup;
 
 @State(Scope.Thread)
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.SECONDS)
-public class CountSetTest extends AbstractJMHTestRunner
+public class CountSetTest
 {
     private static final int SIZE = 1_000_000;
     private static final int BATCH_SIZE = 10_000;
@@ -196,6 +197,8 @@ public class CountSetTest extends AbstractJMHTestRunner
         CountSetScalaTest.megamorphic(this.megamorphicWarmupLevel);
     }
 
+    @Warmup(iterations = 20)
+    @Measurement(iterations = 10)
     @Benchmark
     public void serial_lazy_jdk()
     {
@@ -203,13 +206,8 @@ public class CountSetTest extends AbstractJMHTestRunner
         Assert.assertEquals(SIZE / 2, evens);
     }
 
-    @Benchmark
-    public void serial_lazy_streams_gsc()
-    {
-        long evens = this.integersGSC.stream().filter(each -> each % 2 == 0).count();
-        Assert.assertEquals(SIZE / 2, evens);
-    }
-
+    @Warmup(iterations = 50)
+    @Measurement(iterations = 25)
     @Benchmark
     public void parallel_lazy_jdk()
     {
@@ -217,13 +215,8 @@ public class CountSetTest extends AbstractJMHTestRunner
         Assert.assertEquals(SIZE / 2, evens);
     }
 
-    @Benchmark
-    public void parallel_lazy_streams_gsc()
-    {
-        long evens = this.integersGSC.parallelStream().filter(each -> each % 2 == 0).count();
-        Assert.assertEquals(SIZE / 2, evens);
-    }
-
+    @Warmup(iterations = 20)
+    @Measurement(iterations = 10)
     @Benchmark
     public void serial_eager_gsc()
     {
@@ -231,6 +224,8 @@ public class CountSetTest extends AbstractJMHTestRunner
         Assert.assertEquals(SIZE / 2, evens);
     }
 
+    @Warmup(iterations = 20)
+    @Measurement(iterations = 10)
     @Benchmark
     public void serial_lazy_gsc()
     {
@@ -238,6 +233,8 @@ public class CountSetTest extends AbstractJMHTestRunner
         Assert.assertEquals(SIZE / 2, evens);
     }
 
+    @Warmup(iterations = 50)
+    @Measurement(iterations = 25)
     @Benchmark
     public void parallel_eager_gsc()
     {
@@ -245,6 +242,8 @@ public class CountSetTest extends AbstractJMHTestRunner
         Assert.assertEquals(SIZE / 2, evens);
     }
 
+    @Warmup(iterations = 50)
+    @Measurement(iterations = 25)
     @Benchmark
     public void parallel_lazy_gsc()
     {
@@ -252,18 +251,24 @@ public class CountSetTest extends AbstractJMHTestRunner
         Assert.assertEquals(SIZE / 2, evens);
     }
 
+    @Warmup(iterations = 20)
+    @Measurement(iterations = 10)
     @Benchmark
     public void serial_eager_scala()
     {
         CountSetScalaTest.serial_eager_scala();
     }
 
+    @Warmup(iterations = 20)
+    @Measurement(iterations = 10)
     @Benchmark
     public void serial_lazy_scala()
     {
         CountSetScalaTest.serial_lazy_scala();
     }
 
+    @Warmup(iterations = 50)
+    @Measurement(iterations = 25)
     @Benchmark
     public void parallel_lazy_scala()
     {

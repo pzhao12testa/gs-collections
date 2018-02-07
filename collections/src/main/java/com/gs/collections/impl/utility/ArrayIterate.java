@@ -25,7 +25,6 @@ import java.util.Comparator;
 import java.util.List;
 
 import com.gs.collections.api.RichIterable;
-import com.gs.collections.api.block.HashingStrategy;
 import com.gs.collections.api.block.function.Function;
 import com.gs.collections.api.block.function.Function2;
 import com.gs.collections.api.block.function.Function3;
@@ -96,6 +95,8 @@ import com.gs.collections.impl.utility.internal.InternalArrayIterate;
  */
 public final class ArrayIterate
 {
+    private static final int INSERTIONSORT_THRESHOLD = 11;
+
     private ArrayIterate()
     {
         throw new AssertionError("Suppress default constructor for noninstantiability");
@@ -114,22 +115,60 @@ public final class ArrayIterate
         }
     }
 
-    /**
-     * Inline calls to appropriate Arrays.sort() method which now uses TimSort by default since Java 8.
-     *
-     * @deprecated in 7.0. Use {@link Arrays#sort(Object[], int, int)} or {@link Arrays#sort(Object[], int, int, Comparator)} instead.
-     */
-    @Deprecated
     public static <T> void sort(T[] array, int size, Comparator<? super T> comparator)
     {
-        if (comparator == null)
+        if (size < INSERTIONSORT_THRESHOLD)
         {
-            Arrays.sort(array, 0, size); // handles case size < 2 in Java 8 ComparableTimSort
+            if (comparator == null)
+            {
+                ArrayIterate.insertionSort(array, size);
+            }
+            else
+            {
+                ArrayIterate.insertionSort(array, size, comparator);
+            }
         }
         else
         {
-            Arrays.sort(array, 0, size, comparator); // handles case size < 2 in Java 8 TimSort
+            if (comparator == null)
+            {
+                Arrays.sort(array, 0, size);
+            }
+            else
+            {
+                Arrays.sort(array, 0, size, comparator);
+            }
         }
+    }
+
+    private static <T> void insertionSort(T[] array, int size, Comparator<? super T> comparator)
+    {
+        for (int i = 0; i < size; i++)
+        {
+            for (int j = i; j > 0 && comparator.compare(array[j - 1], array[j]) > 0; j--)
+            {
+                ArrayIterate.swapWithPrevious(array, j);
+            }
+        }
+    }
+
+    private static <T> void insertionSort(T[] array, int size)
+    {
+        for (int i = 0; i < size; i++)
+        {
+            for (int j = i; j > 0 && ((Comparable<T>) array[j - 1]).compareTo(array[j]) > 0; j--)
+            {
+                ArrayIterate.swapWithPrevious(array, j);
+            }
+        }
+    }
+
+    private static <T> void swapWithPrevious(T[] array, int index)
+    {
+        T item = array[index];
+        int previousIndex = index - 1;
+        array[index] = array[previousIndex];
+        array[previousIndex] = item;
     }
 
     public static <T, V extends Comparable<? super V>> T minBy(T[] array, Function<? super T, ? extends V> function)
@@ -1001,37 +1040,13 @@ public final class ArrayIterate
         return result;
     }
 
-    /**
-     * @deprecated in 7.0.
-     */
-    @Deprecated
-    public static <T, R extends List<T>> R distinct(T[] objectArray, R targetList)
+    public static <T, R extends Collection<T>> R distinct(T[] objectArray, R targetCollection)
     {
         if (objectArray == null)
         {
             throw new IllegalArgumentException("Cannot perform a distinct on null");
         }
-        return InternalArrayIterate.distinct(objectArray, objectArray.length, targetList);
-    }
-
-    /**
-     * @since 7.0.
-     */
-    public static <T> MutableList<T> distinct(T[] objectArray)
-    {
-        return ArrayIterate.distinct(objectArray, FastList.<T>newList());
-    }
-
-    /**
-     * @since 7.0.
-     */
-    public static <T> MutableList<T> distinct(T[] objectArray, HashingStrategy<? super T> hashingStrategy)
-    {
-        if (objectArray == null)
-        {
-            throw new IllegalArgumentException("Cannot perform a distinct on null");
-        }
-        return InternalArrayIterate.distinct(objectArray, objectArray.length, hashingStrategy);
+        return InternalArrayIterate.distinct(objectArray, objectArray.length, targetCollection);
     }
 
     /**

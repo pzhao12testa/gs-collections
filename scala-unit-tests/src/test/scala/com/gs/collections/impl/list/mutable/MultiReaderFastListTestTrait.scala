@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Goldman Sachs.
+ * Copyright 2013 Goldman Sachs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,23 +16,31 @@
 
 package com.gs.collections.impl.list.mutable
 
-import com.gs.collections.api.list.MutableList
-import com.gs.collections.impl.MultiReaderThreadSafetyTestTrait
 import com.gs.collections.impl.Prelude._
+import com.gs.collections.api.list.MutableList
+import com.gs.collections.impl.ThreadSafetyTestTrait
 
-trait MultiReaderFastListTestTrait extends MultiReaderThreadSafetyTestTrait
+trait MultiReaderFastListTestTrait extends ThreadSafetyTestTrait
 {
-    val classUnderTest: MultiReaderFastList[Int]
+    val classUnderTest: MultiReaderFastList[_]
 
     def createReadLockHolderThread(gate: Gate): Thread =
+    {
         spawn
         {
-            this.classUnderTest.withReadLockAndDelegate((_: MutableList[_]) => sleep(gate))
+            this.classUnderTest.withReadLockAndDelegate({
+                _: MutableList[_] => sleep(gate)
+            })
         }
+    }
 
     def createWriteLockHolderThread(gate: Gate): Thread =
+    {
         spawn
         {
-            this.classUnderTest.withWriteLockAndDelegate((_: MutableList[_]) => sleep(gate))
+            this.classUnderTest.withWriteLockAndDelegate({
+                _: MutableList[_] => sleep(gate)
+            })
         }
+    }
 }

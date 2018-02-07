@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Goldman Sachs.
+ * Copyright 2014 Goldman Sachs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import com.gs.collections.api.block.predicate.Predicate2;
 import com.gs.collections.api.block.procedure.Procedure;
 import com.gs.collections.api.block.procedure.primitive.ObjectIntProcedure;
 import com.gs.collections.api.list.MutableList;
-import com.gs.collections.api.partition.list.PartitionMutableList;
 import com.gs.collections.api.set.MutableSet;
 import com.gs.collections.api.tuple.Pair;
 import com.gs.collections.api.tuple.Twin;
@@ -49,8 +48,7 @@ import com.gs.collections.impl.tuple.Tuples;
 import org.junit.Assert;
 import org.junit.Test;
 
-import static com.gs.collections.impl.factory.Iterables.iList;
-import static com.gs.collections.impl.factory.Iterables.iSet;
+import static com.gs.collections.impl.factory.Iterables.*;
 
 public class ListIterateTest
 {
@@ -137,18 +135,6 @@ public class ListIterateTest
 
         Assert.assertEquals(7.0d, ListIterate.injectInto(1.0, list, AddFunction.DOUBLE_TO_DOUBLE), 0.001);
         Assert.assertEquals(7.0d, ListIterate.injectInto(1.0, linked, AddFunction.DOUBLE_TO_DOUBLE), 0.001);
-    }
-
-    @Test
-    public void injectIntoFloat()
-    {
-        MutableList<Float> list = Lists.fixedSize.of(1.0f, 2.0f, 3.0f);
-        List<Float> linked = new LinkedList<>(list);
-        Assert.assertEquals(7.0f, ListIterate.injectInto(1.0f, list, AddFunction.FLOAT), 0.001);
-        Assert.assertEquals(7.0f, ListIterate.injectInto(1.0f, linked, AddFunction.FLOAT), 0.001);
-
-        Assert.assertEquals(7.0f, ListIterate.injectInto(1.0f, list, AddFunction.FLOAT_TO_FLOAT), 0.001);
-        Assert.assertEquals(7.0f, ListIterate.injectInto(1.0f, linked, AddFunction.FLOAT_TO_FLOAT), 0.001);
     }
 
     @Test
@@ -373,7 +359,6 @@ public class ListIterateTest
         MutableList<Integer> list = this.getIntegerList();
         this.assertReverseForEachWithIndex(list);
         this.assertReverseForEachWithIndex(new LinkedList<>(list));
-        ListIterate.reverseForEachWithIndex(Lists.mutable.empty(), (ignored1, index) -> Assert.fail());
     }
 
     private void assertReverseForEachWithIndex(List<Integer> list)
@@ -493,15 +478,6 @@ public class ListIterateTest
     }
 
     @Test
-    public void partitionWith()
-    {
-        List<Integer> list = new LinkedList<>(Interval.oneTo(101));
-        PartitionMutableList<Integer> partition = ListIterate.partitionWith(list, Predicates2.in(), Interval.oneToBy(101, 2));
-        Assert.assertEquals(Interval.oneToBy(101, 2), partition.getSelected());
-        Assert.assertEquals(Interval.fromToBy(2, 100, 2), partition.getRejected());
-    }
-
-    @Test
     public void anySatisfyWith()
     {
         MutableList<Integer> undertest = this.getIntegerList();
@@ -528,21 +504,6 @@ public class ListIterateTest
         Assert.assertTrue(ListIterate.allSatisfyWith(list, Predicates2.instanceOf(), Integer.class));
         Predicate2<Integer, Integer> greaterThanPredicate = Predicates2.greaterThan();
         Assert.assertFalse(ListIterate.allSatisfyWith(list, greaterThanPredicate, 2));
-    }
-
-    @Test
-    public void noneSatisfyWith()
-    {
-        MutableList<Integer> list = this.getIntegerList();
-        this.assertNoneSatisfyWith(list);
-        this.assertNoneSatisfyWith(new LinkedList<>(list));
-    }
-
-    private void assertNoneSatisfyWith(List<Integer> list)
-    {
-        Assert.assertTrue(ListIterate.noneSatisfyWith(list, Predicates2.instanceOf(), String.class));
-        Predicate2<Integer, Integer> greaterThanPredicate = Predicates2.greaterThan();
-        Assert.assertTrue(ListIterate.noneSatisfyWith(list, greaterThanPredicate, 6));
     }
 
     @Test
@@ -586,9 +547,6 @@ public class ListIterateTest
         Verify.assertSize(0, ListIterate.take(Lists.fixedSize.of(), 2));
         Verify.assertSize(0, ListIterate.take(new LinkedList<>(), 2));
         Verify.assertSize(0, ListIterate.take(new LinkedList<>(), Integer.MAX_VALUE));
-
-        Verify.assertThrows(IllegalArgumentException.class, () -> ListIterate.take(this.getIntegerList(), -1));
-        Verify.assertThrows(IllegalArgumentException.class, () -> ListIterate.take(this.getIntegerList(), -1, FastList.newList()));
     }
 
     private void assertTake(List<Integer> integers)
@@ -598,7 +556,6 @@ public class ListIterateTest
         Verify.assertListsEqual(FastList.newListWith(5, 4), ListIterate.take(integers, 2));
         Verify.assertListsEqual(FastList.newListWith(5, 4, 3, 2, 1), ListIterate.take(integers, 5));
         Verify.assertListsEqual(FastList.newListWith(5, 4, 3, 2, 1), ListIterate.take(integers, 10));
-        Verify.assertListsEqual(FastList.newListWith(5, 4, 3, 2, 1), ListIterate.take(integers, 10, FastList.newList()));
         Verify.assertListsEqual(FastList.newListWith(5, 4, 3, 2), ListIterate.take(integers, integers.size() - 1));
         Verify.assertListsEqual(FastList.newListWith(5, 4, 3, 2, 1), ListIterate.take(integers, integers.size()));
         Assert.assertNotSame(integers, ListIterate.take(integers, integers.size()));
@@ -610,7 +567,6 @@ public class ListIterateTest
     public void take_throws()
     {
         ListIterate.take(this.getIntegerList(), -1);
-        ListIterate.take(this.getIntegerList(), -1, FastList.newList());
     }
 
     @Test
@@ -618,17 +574,19 @@ public class ListIterateTest
     {
         MutableList<Integer> integers = this.getIntegerList();
         this.assertDrop(integers);
-        this.assertDrop(new LinkedList<>(integers));
 
         Verify.assertSize(0, ListIterate.drop(Lists.fixedSize.<Integer>of(), 2));
         Verify.assertSize(0, ListIterate.drop(new LinkedList<>(), 2));
         Verify.assertSize(0, ListIterate.drop(new LinkedList<>(), Integer.MAX_VALUE));
-
-        Verify.assertThrows(IllegalArgumentException.class, () -> ListIterate.drop(FastList.newList(), -1));
-        Verify.assertThrows(IllegalArgumentException.class, () -> ListIterate.drop(FastList.newList(), -1, FastList.newList()));
     }
 
-    private void assertDrop(List<Integer> integers)
+    @Test(expected = IllegalArgumentException.class)
+    public void dropWithTargetWithIllegalSize()
+    {
+        ListIterate.drop(FastList.newList(), -1, FastList.newList());
+    }
+
+    private void assertDrop(MutableList<Integer> integers)
     {
         Verify.assertListsEqual(FastList.newListWith(5, 4, 3, 2, 1), ListIterate.drop(integers, 0));
         Assert.assertNotSame(integers, ListIterate.drop(integers, 0));
@@ -636,7 +594,6 @@ public class ListIterateTest
         Verify.assertListsEqual(FastList.newListWith(1), ListIterate.drop(integers, integers.size() - 1));
         Verify.assertEmpty(ListIterate.drop(integers, 5));
         Verify.assertEmpty(ListIterate.drop(integers, 6));
-        Verify.assertEmpty(ListIterate.drop(integers, 6, FastList.newList()));
         Verify.assertEmpty(ListIterate.drop(integers, integers.size()));
 
         Verify.assertSize(0, ListIterate.drop(Lists.fixedSize.of(), 2));
@@ -646,7 +603,6 @@ public class ListIterateTest
     public void drop_throws()
     {
         ListIterate.drop(this.getIntegerList(), -1);
-        ListIterate.drop(this.getIntegerList(), -1, FastList.newList());
     }
 
     @Test

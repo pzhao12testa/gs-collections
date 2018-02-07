@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Goldman Sachs.
+ * Copyright 2014 Goldman Sachs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -130,12 +130,12 @@ public interface FixedSizeCollection<T>
     /**
      * @throws UnsupportedOperationException
      */
-    boolean removeIf(Predicate<? super T> predicate);
+    void removeIf(Predicate<? super T> predicate);
 
     /**
      * @throws UnsupportedOperationException
      */
-    <P> boolean removeIfWith(Predicate2<? super T, ? super P> predicate, P parameter);
+    <P> void removeIfWith(Predicate2<? super T, ? super P> predicate, P parameter);
 
     /**
      * @throws UnsupportedOperationException

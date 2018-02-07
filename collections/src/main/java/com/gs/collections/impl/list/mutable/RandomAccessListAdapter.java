@@ -22,7 +22,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.RandomAccess;
 
-import com.gs.collections.api.block.HashingStrategy;
 import com.gs.collections.api.block.function.Function;
 import com.gs.collections.api.block.function.Function0;
 import com.gs.collections.api.block.function.Function2;
@@ -52,7 +51,6 @@ import com.gs.collections.api.ordered.OrderedIterable;
 import com.gs.collections.api.partition.list.PartitionMutableList;
 import com.gs.collections.api.tuple.Pair;
 import com.gs.collections.impl.block.factory.Comparators;
-import com.gs.collections.impl.block.factory.HashingStrategies;
 import com.gs.collections.impl.block.procedure.CollectionAddProcedure;
 import com.gs.collections.impl.block.procedure.primitive.CollectBooleanProcedure;
 import com.gs.collections.impl.block.procedure.primitive.CollectByteProcedure;
@@ -445,12 +443,7 @@ public final class RandomAccessListAdapter<T>
 
     public MutableList<T> distinct()
     {
-        return RandomAccessListIterate.distinct(this.delegate);
-    }
-
-    public MutableList<T> distinct(HashingStrategy<? super T> hashingStrategy)
-    {
-        return RandomAccessListIterate.distinct(this.delegate, hashingStrategy);
+        return RandomAccessListIterate.distinct(this.delegate, FastList.<T>newList());
     }
 
     @Override

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Goldman Sachs.
+ * Copyright 2014 Goldman Sachs.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import com.gs.collections.api.list.MutableList;
-import com.gs.collections.impl.jmh.runner.AbstractJMHTestRunner;
 import com.gs.collections.impl.list.Interval;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
@@ -33,7 +32,7 @@ import org.openjdk.jmh.annotations.State;
 @State(Scope.Thread)
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.SECONDS)
-public class ListEqualTest extends AbstractJMHTestRunner
+public class ListEqualTest
 {
     private static final int SIZE = 1_000_000;
     private final List<Integer> integersJDK1 = new ArrayList<>(Interval.oneTo(SIZE));
@@ -46,50 +45,20 @@ public class ListEqualTest extends AbstractJMHTestRunner
     @Benchmark
     public void jdk()
     {
-        if (!this.integersJDK1.equals(this.integersJDK1))
-        {
-            throw new AssertionError();
-        }
-        if (!this.integersJDK1.equals(this.integersJDK2))
-        {
-            throw new AssertionError();
-        }
-        if (this.integersJDK1.equals(this.integersJDK3))
-        {
-            throw new AssertionError();
-        }
-        if (!this.integersJDK1.equals(this.integersGSC1))
-        {
-            throw new AssertionError();
-        }
-        if (this.integersJDK1.equals(this.integersGSC3))
-        {
-            throw new AssertionError();
-        }
+        boolean result0 = this.integersJDK1.equals(this.integersJDK1);
+        boolean result1 = this.integersJDK1.equals(this.integersJDK2);
+        boolean result2 = this.integersJDK1.equals(this.integersJDK3);
+        boolean result3 = this.integersJDK1.equals(this.integersGSC1);
+        boolean result4 = this.integersJDK1.equals(this.integersGSC3);
     }
 
     @Benchmark
     public void gsc()
     {
-        if (!this.integersGSC1.equals(this.integersGSC1))
-        {
-            throw new AssertionError();
-        }
-        if (!this.integersGSC1.equals(this.integersGSC2))
-        {
-            throw new AssertionError();
-        }
-        if (this.integersGSC1.equals(this.integersGSC3))
-        {
-            throw new AssertionError();
-        }
-        if (!this.integersGSC1.equals(this.integersJDK1))
-        {
-            throw new AssertionError();
-        }
-        if (this.integersGSC1.equals(this.integersJDK3))
-        {
-            throw new AssertionError();
-        }
+        boolean result0 = this.integersGSC1.equals(this.integersGSC1);
+        boolean result1 = this.integersGSC1.equals(this.integersGSC2);
+        boolean result2 = this.integersGSC1.equals(this.integersGSC3);
+        boolean result3 = this.integersGSC1.equals(this.integersJDK1);
+        boolean result4 = this.integersGSC1.equals(this.integersJDK3);
     }
 }

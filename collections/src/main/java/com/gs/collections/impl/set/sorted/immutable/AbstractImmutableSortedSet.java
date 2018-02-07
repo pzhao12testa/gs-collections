@@ -451,24 +451,4 @@ abstract class AbstractImmutableSortedSet<T> extends AbstractImmutableCollection
         }
         return new NonParallelSortedSetIterable<T>(this);
     }
-
-    public void reverseForEach(Procedure<? super T> procedure)
-    {
-        throw new UnsupportedOperationException(this.getClass().getSimpleName() + ".reverseForEach() not implemented yet");
-    }
-
-    public LazyIterable<T> asReversed()
-    {
-        throw new UnsupportedOperationException(this.getClass().getSimpleName() + ".asReversed() not implemented yet");
-    }
-
-    public ImmutableSortedSet<T> toReversed()
-    {
-        throw new UnsupportedOperationException(this.getClass().getSimpleName() + ".toReversed() not implemented yet");
-    }
-
-    public int detectLastIndex(Predicate<? super T> predicate)
-    {
-        throw new UnsupportedOperationException(this.getClass().getSimpleName() + ".detectLastIndex() not implemented yet");
-    }
 }

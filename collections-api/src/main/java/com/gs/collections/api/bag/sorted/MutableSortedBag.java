@@ -151,10 +151,4 @@ public interface MutableSortedBag<T>
     <S> MutableList<Pair<T, S>> zip(Iterable<S> that);
 
     MutableSortedSet<Pair<T, Integer>> zipWithIndex();
-
-    MutableSortedBag<T> toReversed();
-
-    MutableSortedBag<T> take(int count);
-
-    MutableSortedBag<T> drop(int count);
 }

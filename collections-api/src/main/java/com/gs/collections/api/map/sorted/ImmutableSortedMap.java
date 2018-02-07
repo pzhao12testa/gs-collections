@@ -62,7 +62,6 @@ public interface ImmutableSortedMap<K, V>
 
     SortedMap<K, V> castToSortedMap();
 
-    // TODO: Keys could be ordered
     ImmutableSortedSetMultimap<V, K> flip();
 
     ImmutableSortedMap<K, V> newWithKeyValue(K key, V value);
@@ -77,8 +76,7 @@ public interface ImmutableSortedMap<K, V>
 
     MutableSortedMap<K, V> toSortedMap();
 
-    // TODO: When we have implementations of linked hash maps
-    // ImmutableOrderedMap<V, K> flipUniqueValues();
+    ImmutableMap<V, K> flipUniqueValues();
 
     ImmutableSortedMap<K, V> select(Predicate2<? super K, ? super V> predicate);
 
